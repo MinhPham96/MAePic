@@ -83,7 +83,7 @@
         />
 
     <ListView
-        android:id="@+id/diaryListView"
+        android:id="@+id/commentListView"
         android:layout_marginStart="30dp"
         android:layout_width="320dp"
         android:layout_height="300dp"

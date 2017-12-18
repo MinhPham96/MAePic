@@ -109,12 +109,6 @@ public class MapsActivity extends FragmentActivity implements
         Log.i("MapsActivity", "setup Firebase Database");
         //get instance for both the database and authentiaction
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        //set the reference to specific on the "streets" child in the database
-        mDatabaseReference = mFirebaseDatabase.getReference().child("Users");
-
-        Log.i("MapsActivity", "setup Firebase Database");
-        //get instance for both the database and authentiaction
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
         //set the reference to specific on the "streets" child in the database
         mDatabaseReference = mFirebaseDatabase.getReference().child("articles");
@@ -165,10 +159,22 @@ public class MapsActivity extends FragmentActivity implements
                                 Log.i("MapView", "Signed out, back to Main Menu");
                                 startActivity(new Intent(MapsActivity.this, MainActivity.class));
                                 finish();       //finish this activity
-                            }
-                        });
+                            }});
             }
         });
+
+        final Button buttonAccount = findViewById(R.id.buttonAccount);
+        buttonAccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sharedPref.edit().putString("Current User", mUsername).apply();
+                sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
+
+                Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override
@@ -225,24 +231,18 @@ public class MapsActivity extends FragmentActivity implements
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                if(marker != null && marker.getTitle().equals(currentLocation)) {
-                    Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
-                    startActivity(intent);
-                }
-                else {
-                    //scan if the title match the street name in the array list
-                    for (int i = 0; i < keyList.size(); i++) {
-                        if (marker != null && marker.getSnippet().equals(keyList.get(i))) {
-                            sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
-                            sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
-                            sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
-                            //send the current username to the shared preference
-                            sharedPref.edit().putString("Current User", mUsername).apply();
+                //scan if the title match the street name in the array list
+                for (int i = 0; i < keyList.size(); i++) {
+                    if (marker != null && marker.getSnippet().equals(keyList.get(i))) {
+                        sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
+                        sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
+                        sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
+                        //send the current username to the shared preference
+                        sharedPref.edit().putString("Current User", mUsername).apply();
 
-                            //Move to the info page of the selected street
-                            Intent intent = new Intent(MapsActivity.this, InfoView.class);
-                            startActivity(intent);
-                        }
+                        //Move to the info page of the selected street
+                        Intent intent = new Intent(MapsActivity.this, InfoView.class);
+                        startActivity(intent);
                     }
                 }
             }
@@ -321,10 +321,10 @@ public class MapsActivity extends FragmentActivity implements
     private void handleNewLocation(Location location) {
         //create a custom icon to differentiate the user location with the other street point marker
         //get the resource image
-        BitmapDrawable bitmapdraw =(BitmapDrawable)getResources().getDrawable(R.drawable.user_location);
-        Bitmap mBitmap = bitmapdraw.getBitmap();        //add the image to the bitmap
-        //create a custom bitmap with smaller size to fit the map using the above bitmap
-        Bitmap smallMarker = Bitmap.createScaledBitmap(mBitmap, 130, 130, false);
+//        BitmapDrawable bitmapdraw =(BitmapDrawable)getResources().getDrawable(R.drawable.user_location);
+//        Bitmap mBitmap = bitmapdraw.getBitmap();        //add the image to the bitmap
+//        //create a custom bitmap with smaller size to fit the map using the above bitmap
+//        Bitmap smallMarker = Bitmap.createScaledBitmap(mBitmap, 130, 130, false);
 
         //get current location latitude and longitude
         double currentLatitude = location.getLatitude();
@@ -332,14 +332,17 @@ public class MapsActivity extends FragmentActivity implements
         Log.i("MapView", "Current Latitude: " + String.valueOf(currentLatitude));
         Log.i("MapView", "Current Longitude: " + String.valueOf(currentLongitude));
 
+        sharedPref.edit().putFloat("Current Latitude", (float)currentLatitude).apply();
+        sharedPref.edit().putFloat("Current Longitude", (float)currentLongitude).apply();
+
         //create new latlng instance based on latitude and longitude
         LatLng latLng = new LatLng(currentLatitude, currentLongitude);
 
-        myMarker = mMap.addMarker(new MarkerOptions()
-                .position(latLng)           //specify marker location
-                .title(currentLocation)     //marker title
-                //add the custom icon to the marker
-                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+//        myMarker = mMap.addMarker(new MarkerOptions()
+//                .position(latLng)           //specify marker location
+//                .title(currentLocation)     //marker title
+//                //add the custom icon to the marker
+//                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
         //move current camera to marker position, with zoom value of 14
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
     }

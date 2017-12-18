@@ -1,35 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.hi.maepic.InfoView">
 
+    <ImageView
+        android:id="@+id/imageViewAvatar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="30dp"
+        app:srcCompat="@drawable/com_facebook_button_icon_blue" />
+
     <TextView
         android:id="@+id/ownerText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="50dp"
         android:text="Owner Name"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.1"
-        />
+        android:textStyle="bold"
+        android:textSize="18dp"
+        android:textColor="#000"
+        app:layout_constraintVertical_bias="0.1" />
 
     <TextView
         android:id="@+id/contentText"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="100dp"
+        android:text="Note that the API key is linked to the encryption key used to sign the APK"
+        android:textSize="15sp"
+        android:textColor="#7F7E7E"
+        app:layout_constraintVertical_bias="0.1" />
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/contentText" />
+
+    <Button
+        android:id="@+id/buttonLike"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/progressBar1"
+        android:layout_marginTop="10dp"
+        android:layout_toStartOf="@+id/editTextComment"
+        android:layout_margin="15dp"
+        android:layout_marginStart="30dp"
+        android:background="@drawable/like" />
+
+    <EditText
+        android:id="@+id/editTextComment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/ownerText"
-        app:layout_constraintVertical_bias="0.1"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/progressBar1"
+        android:ems="10"
+        android:hint="Comment..." />
+
+    <Button
+        android:id="@+id/buttonComment"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_toEndOf="@+id/editTextComment"
+        android:layout_margin="15dp"
+        android:layout_below="@+id/progressBar1"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/comment" />
+
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonLike"
         />
 
+    <ListView
+        android:id="@+id/diaryListView"
+        android:layout_marginStart="30dp"
+        android:layout_width="320dp"
+        android:layout_height="300dp"
+        android:layout_below="@+id/progressBar2"
+        android:layout_marginTop="10dp"
+        android:divider="@android:color/transparent"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll"
+        tools:listitem="@layout/item_comment" />
 
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

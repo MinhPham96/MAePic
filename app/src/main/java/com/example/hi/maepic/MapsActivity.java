@@ -227,6 +227,8 @@ public class MapsActivity extends FragmentActivity implements
         Log.i("MapsActivity", "Map is ready");
         //get the Google Map
         mMap = googleMap;
+        CustomInfoWindowAdapter adapter = new CustomInfoWindowAdapter(MapsActivity.this);
+        mMap.setInfoWindowAdapter(adapter);
         //set to activate a method when click on the title of the marker
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override

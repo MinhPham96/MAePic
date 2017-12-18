@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "535136124756",
+    "firebase_url": "https://maepic-f9d65.firebaseio.com",
+    "project_id": "maepic-f9d65",
+    "storage_bucket": "maepic-f9d65.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535136124756:android:b9e5c570e4d3604a",
+        "android_client_info": {
+          "package_name": "com.example.hi.maepic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "535136124756-k95ejmc9tv1oncpqd43t1tn8epbg69ba.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hi.maepic",
+            "certificate_hash": "ac645640976ebbc852c0e2adb1cd5e515f71ae28"
+          }
+        },
+        {
+          "client_id": "535136124756-6gm11974432u084v7ih7r31qhdghb81h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWcY-aKG4FQCPCySaiggJzQtcqZnre9y0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "535136124756-6gm11974432u084v7ih7r31qhdghb81h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

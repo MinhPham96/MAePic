@@ -8,9 +8,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,6 +41,7 @@ public class InfoView extends AppCompatActivity {
     private String content;                             //the content of the article
     private String username;                            //the current user
     private String articleKey;                          //the article key ID
+    private String photoURL;
 
     private ListView mCommentListView;                  //an instance of the list view
     private TextView editText;                          //the edit text to put in new comment
@@ -61,6 +64,7 @@ public class InfoView extends AppCompatActivity {
         content = sharedPref.getString("Article Content", "This is a content");
         username = sharedPref.getString("Current User", "anonymous");
         articleKey = sharedPref.getString("Article Key", "article");
+        photoURL = sharedPref.getString("Photo URL", null);
 
         //initialize the article
         TextView ownerText = (TextView) findViewById(R.id.ownerText);
@@ -72,6 +76,18 @@ public class InfoView extends AppCompatActivity {
         mCommentListView = (ListView) findViewById(R.id.commentListView);
         editText = (TextView) findViewById(R.id.editTextComment);
         commentButton = (Button) findViewById(R.id.buttonComment);
+        ImageView photoImageView = (ImageView) findViewById(R.id.imageViewPhoto);
+
+        boolean isPhoto = photoURL != null;
+        if(isPhoto) {
+            photoImageView.setVisibility(View.VISIBLE);
+            Glide.with(photoImageView.getContext())
+                    .load(photoURL)
+                    .into(photoImageView);
+        }
+        else {
+            photoImageView.setVisibility(View.GONE);
+        }
 
         //set up the adapter and add it to the list view
         mCommentAdapter = new CommentAdapter(this, R.layout.item_comment, commentList);

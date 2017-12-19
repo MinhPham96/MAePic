@@ -241,6 +241,12 @@ public class MapsActivity extends FragmentActivity implements
                         sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
                         //send the current username to the shared preference
                         sharedPref.edit().putString("Current User", mUsername).apply();
+                        if(articleList.get(i).getPhotoURL() != null) {
+                            sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();
+                        }
+                        else {
+                            sharedPref.edit().putString("Photo URL", null).apply();
+                        }
 
                         //Move to the info page of the selected street
                         Intent intent = new Intent(MapsActivity.this, InfoView.class);

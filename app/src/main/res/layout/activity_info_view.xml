@@ -10,7 +10,7 @@
         android:id="@+id/imageViewAvatar"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="30dp"
         app:srcCompat="@drawable/com_facebook_button_icon_blue" />
 
@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="30dp"
         android:text="Owner Name"
         android:textStyle="bold"
         android:textSize="18dp"
@@ -30,19 +30,32 @@
         android:id="@+id/contentText"
         android:layout_width="320dp"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/ownerText"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="10dp"
         android:text="Note that the API key is linked to the encryption key used to sign the APK"
         android:textSize="15sp"
         android:textColor="#7F7E7E"
         app:layout_constraintVertical_bias="0.1" />
+
+    <ImageView
+        android:id="@+id/imageViewPhoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/contentText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="10dp"
+        app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
 
     <ProgressBar
         android:id="@+id/progressBar1"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/contentText" />
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_below="@+id/imageViewPhoto" />
 
     <Button
         android:id="@+id/buttonLike"
@@ -52,7 +65,6 @@
         android:layout_marginTop="10dp"
         android:layout_toStartOf="@+id/editTextComment"
         android:layout_margin="15dp"
-        android:layout_marginStart="30dp"
         android:background="@drawable/like" />
 
     <EditText
@@ -79,16 +91,18 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/buttonLike"
-        />
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_below="@+id/buttonLike" />
 
     <ListView
         android:id="@+id/commentListView"
-        android:layout_marginStart="30dp"
-        android:layout_width="320dp"
-        android:layout_height="300dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/progressBar2"
         android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
         android:divider="@android:color/transparent"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll"

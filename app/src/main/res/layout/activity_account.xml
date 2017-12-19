@@ -1,37 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginStart="10dp"
+    android:layout_marginTop="10dp"
     tools:context="com.example.hi.maepic.AccountActivity">
 
-    <EditText
-        android:id="@+id/editText"
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:srcCompat="@android:drawable/btn_star"
+        android:id="@+id/imageView" />
+
+    <TextView
+        android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text=""
-        android:hint="article"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHorizontal_bias="0.2"
-        app:layout_constraintVertical_bias="0.1"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/commentEditText"
+        android:textColor="#000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Name" />
+
+    <EditText
+        android:id="@+id/commentEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/nameTextView"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#7F7E7E"
+        android:textSize="20sp"
+        android:hint="What is on your mind?"
         />
+
+    <ImageView
+        android:id="@+id/imageViewPhoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/commentEditText"
+        android:layout_centerHorizontal="true"
+        app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
+
+    <Button
+        android:id="@+id/buttonGallery"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="30dp"
+        android:layout_below="@+id/imageViewPhoto"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/photo" />
+
+    <Button
+        android:id="@+id/buttonCamera"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/imageViewPhoto"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/camera" />
 
     <Button
         android:id="@+id/buttonPost"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/imageViewPhoto"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="30dp"
+        android:background="@drawable/send" />
+
+    <ProgressBar
+        android:id="@+id/progressBarStatus"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_below="@+id/buttonGallery" />
+
+    <ListView
+        android:id="@+id/statusListView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="post"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="@+id/editText"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHorizontal_bias="0.85"
-        app:layout_constraintVertical_bias="0.1"
-        />
-</android.support.constraint.ConstraintLayout>
+        android:layout_below="@+id/progressBarStatus"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:divider="@android:color/transparent"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll"
+        tools:listitem="@layout/item_status" />
+
+
+</RelativeLayout>

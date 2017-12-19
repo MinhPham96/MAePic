@@ -23,7 +23,7 @@
         android:layout_marginStart="30dp"
         android:layout_toEndOf="@+id/imageView"
         android:textColor="#000"
-        android:textSize="18sp"
+        android:textSize="15sp"
         android:textStyle="bold"
         tools:text="Name" />
 
@@ -37,13 +37,22 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="#7F7E7E"
         android:textSize="15sp"
-        tools:text="Comment" />
+        tools:text="Status" />
+
+    <ImageView
+        android:id="@+id/photoImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/commentTextView"
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_marginStart="30dp"
+        app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
 
     <TextView
         android:id="@+id/dateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/commentTextView"
+        android:layout_below="@+id/photoImageView"
         android:layout_toEndOf="@+id/imageView"
         android:layout_marginStart="30dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -56,5 +65,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
         android:layout_below="@+id/dateTextView" />
+
+
 
 </RelativeLayout>

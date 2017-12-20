@@ -31,8 +31,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 public class AccountActivity extends AppCompatActivity {
 
@@ -112,7 +117,8 @@ public class AccountActivity extends AppCompatActivity {
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(selectedImageUri != null) {
+            if(!editText.getText().toString().replace(" ","").isEmpty() || selectedImageUri != null) {
+                if (selectedImageUri != null) {
                     StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
                     photoRef.putFile(selectedImageUri)
                             .addOnSuccessListener(AccountActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -128,43 +134,57 @@ public class AccountActivity extends AppCompatActivity {
                                     selectedImageUri = null;
                                 }
                             });
-                }
-                else {
+                } else {
                     String content = editText.getText().toString();
                     Article newArticle = new Article(content, username, userKey, latitude, longitude, null, null, new Date());
                     mDatabaseReference.push().setValue(newArticle);
                     editText.setText("");
                 }
-
+            }
             }
         });
 
         attachDatabaseReadListener();
     }
 
+    // onActivityResult function called depending on the request code sent
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        // super initialization
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         ImageView imageView = this.findViewById(R.id.imageViewPhoto);
         switch(requestCode) {
-            case 0:
-                if(resultCode == RESULT_OK){
-//                    Bitmap thumbnail = (Bitmap) imageReturnedIntent.getExtras().get("data");
-//                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-//                    thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-
-                    //to generate random file name
-//                    String fileName = "tempimg.jpg";
-
+            case 0: // first case, image was taken from camera
+                if(resultCode == RESULT_OK){ // if activity is successful
+                    // create output stream
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    // obtain bitmap from photo taken
                     Bitmap photo = (Bitmap) imageReturnedIntent.getExtras().get("data");
-                    //captured image set in imageview
-                    selectedImageUri = imageReturnedIntent.getData();
+                    // compress photo
+                    photo.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+                    // create temporary image file from the photo taken
+                    File file = createImageFile();
+                    if (file != null) {
+                        FileOutputStream fout;
+                        try {
+                            // compress and then flush output file
+                            fout = new FileOutputStream(file);
+                            photo.compress(Bitmap.CompressFormat.PNG, 70, fout);
+                            fout.flush();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        // obtaining Uri from flushed file
+                        selectedImageUri = Uri.fromFile(file);
+                    }
+                    // make the imageView visible
                     imageView.setVisibility(View.VISIBLE);
-                    imageView.setImageBitmap(photo);
-
+                    // display the captured image
+                    imageView.setImageURI(selectedImageUri);
                 }
                 break;
-            case 1:
+            case 1: // the case where the image is selected from gallery
                 if(resultCode == RESULT_OK){
+                    // get the Uri and again, display the image
                     selectedImageUri = imageReturnedIntent.getData();
                     imageView.setVisibility(View.VISIBLE);
                     imageView.setImageURI(selectedImageUri);
@@ -194,5 +214,31 @@ public class AccountActivity extends AppCompatActivity {
             };
             mDatabaseReference.addChildEventListener(mChildEventListener);
         }
+    }
+
+    // function to create temporary file
+    public File createImageFile() {
+        // create timestamp for file
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        // create file name
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        // create empty file
+        File mFileTemp = null;
+        // create string story file directory
+        String root=AccountActivity.this.getDir("my_sub_dir",Context.MODE_PRIVATE).getAbsolutePath();
+        // create file representing directory
+        File myDir = new File(root + "/Img");
+        // create directory if it does not exist
+        if(!myDir.exists()){
+            myDir.mkdirs();
+        }
+        try {
+            //  store file at directory into temporary file
+            mFileTemp=File.createTempFile(imageFileName,".jpg",myDir.getAbsoluteFile());
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        // return the temporary file
+        return mFileTemp;
     }
 }

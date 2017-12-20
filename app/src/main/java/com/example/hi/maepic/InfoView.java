@@ -100,11 +100,13 @@ public class InfoView extends AppCompatActivity {
         commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            //set new comment with: comment content, current user, the article key, and the date
-            Comment newComment = new Comment(editText.getText().toString(), username, articleKey, new Date());
-            editText.setText("");       //empty the text view
-            //push the new data to the database
-            mDatabaseReference.push().setValue(newComment);
+            if(!editText.getText().toString().replace(" ","").isEmpty()) {
+                //set new comment with: comment content, current user, the article key, and the date
+                Comment newComment = new Comment(editText.getText().toString(), username, articleKey, new Date());
+                editText.setText("");       //empty the text view
+                //push the new data to the database
+                mDatabaseReference.push().setValue(newComment);
+            }
             }
         });
     }

@@ -202,6 +202,7 @@ public class MapsActivity extends FragmentActivity implements
         setUpMapIfNeeded();
         //connect to Google API Client
         mGoogleApiClient.connect();
+        attachDatabaseReadListener();
         //add new authentication state listener if the current is null
         if(mAuthStateListener != null) {
             mFirebaseAuth.addAuthStateListener(mAuthStateListener);
@@ -213,6 +214,7 @@ public class MapsActivity extends FragmentActivity implements
     protected void onPause() {
         super.onPause();
         Log.i("MapsActivity", "onPause is running");
+        detachDatabaseReadListener();
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         //disconnect the Google API Client
         if(mGoogleApiClient.isConnected()) {
@@ -397,6 +399,8 @@ public class MapsActivity extends FragmentActivity implements
 
     private void detachDatabaseReadListener() {
         Log.i("MapsActivity", "detach database read listener");
+        articleList.clear();
+        keyList.clear();
         if(mChildEventListener != null) {
             //remove the data read listener
             mDatabaseReference.removeEventListener(mChildEventListener);

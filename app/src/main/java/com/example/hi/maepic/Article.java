@@ -16,7 +16,7 @@ public class Article {
     private String photoURL;
     private String iconURL;
     private Date date;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MM yyyy");
 
 
     Article() {}

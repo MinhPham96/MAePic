@@ -26,6 +26,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -125,8 +126,8 @@ public class AccountActivity extends AppCompatActivity {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     // When the image has successfully uploaded, we get its download URL
                                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
-
                                     String content = editText.getText().toString();
+
                                     Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), null, new Date());
                                     mDatabaseReference.push().setValue(newArticle);
                                     editText.setText("");

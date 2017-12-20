@@ -43,7 +43,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback,                                     //for map set up
@@ -74,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements
     private SharedPreferences sharedPref;       //an instance for the shared preference
     ArrayList<String> keyList = new ArrayList<String>();
     ArrayList<Article> articleList = new ArrayList<Article>();
+    private static final int expiredTime = 2;        //2 days
     private static final String currentLocation  = "Your Location";
 
     @Override
@@ -367,17 +372,43 @@ public class MapsActivity extends FragmentActivity implements
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     //get the data from the database and add them to the streets array list
                     Article article1 = dataSnapshot.getValue(Article.class);
-                    articleList.add(article1);
-                    String key = dataSnapshot.getKey();
-                    keyList.add(key);
-                    mMap.addMarker(new MarkerOptions()
-                            //the position is based on the pre-defined latitude and longitude of the street
-                            .position(new LatLng(article1.getLatitude(), article1.getLongitude()))
-                            //the title of the marker is the street name
-                            .title(article1.getOwner())
-                            .snippet(key));
 
-                    Log.i("MapsActivity", article1.getOwner() + "'s Article added");
+                    //create 2 string of date
+                    SimpleDateFormat myFormat = new SimpleDateFormat("dd MM yyyy");
+                    String inputString1 = article1.printDate();         //the date from the article
+                    String inputString2 = myFormat.format(new Date());  //current date
+                    try {
+                        //create 2 date instances based on the string
+                        Date date1 = myFormat.parse(inputString1);
+                        Date date2 = myFormat.parse(inputString2);
+                        //get the difference of time between the two
+                        long diff = date2.getTime() - date1.getTime();
+                        //convert the difference into days
+                        diff = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+                        //if this article exceeds the expired day
+                        if (diff >= expiredTime) {
+                            //remove the article from the database
+                            mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
+                        }
+                        else {
+                            //add the article to the list
+                            articleList.add(article1);
+                            //get the article id and store it in another list
+                            String key = dataSnapshot.getKey();
+                            keyList.add(key);
+                            //create a new marker based on the article information and location
+                            mMap.addMarker(new MarkerOptions()
+                                    //the position is based on the pre-defined latitude and longitude of the article
+                                    .position(new LatLng(article1.getLatitude(), article1.getLongitude()))
+                                    //the title of the marker is the owner name
+                                    .title(article1.getOwner())
+                                    .snippet(key));
+
+                            Log.i("MapsActivity", article1.getOwner() + "'s Article added");
+                        }
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
                 }
 

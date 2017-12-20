@@ -12,7 +12,7 @@ public class Comment {
     private String author;
     private String articleKey;
     private Date date;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MM yyyy");
 
     Comment() {}
 

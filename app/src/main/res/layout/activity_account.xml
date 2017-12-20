@@ -92,7 +92,9 @@
         android:divider="@android:color/transparent"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll"
-        tools:listitem="@layout/item_status" />
+        tools:listitem="@layout/item_status"
+        android:scrollbars="none"
+        />
 
 
 </RelativeLayout>

@@ -215,6 +215,7 @@ public class MapsActivity extends FragmentActivity implements
         super.onPause();
         Log.i("MapsActivity", "onPause is running");
         detachDatabaseReadListener();
+        mMap.clear();
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         //disconnect the Google API Client
         if(mGoogleApiClient.isConnected()) {

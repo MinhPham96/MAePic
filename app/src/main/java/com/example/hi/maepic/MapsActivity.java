@@ -17,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -47,6 +48,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class MapsActivity extends FragmentActivity implements
@@ -75,11 +78,20 @@ public class MapsActivity extends FragmentActivity implements
     //an instance for the authentiation state listener
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
+    private Button buttonLeft;
+    private Button buttonRight;
+
     private SharedPreferences sharedPref;       //an instance for the shared preference
     ArrayList<String> keyList = new ArrayList<String>();
     ArrayList<Article> articleList = new ArrayList<Article>();
+    //Shared preference only support set so set is used to store the expired key
+    Set<String> expiredKey = new HashSet<String>();
     private static final int expiredTime = 2;        //2 days
     private static final String currentLocation  = "Your Location";
+
+    ArrayList<Marker> markers = new ArrayList<Marker>(); // array of all markers on map
+    ArrayList<Marker> searchedMarkers = new ArrayList<Marker>(); // array of searched markers
+    int searchedMarkersIndex = 0;
 
     @Override
     public void onBackPressed() {
@@ -180,6 +192,36 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
 
+        Log.i("MapView", "setup Search button");
+        final Button buttonSearch = findViewById(R.id.buttonSearch);
+        //search the name if the button is clicked
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                searchArticles();
+                Log.i("Maps Activity", "Search button pressed");
+            }
+        });
+
+        Log.i("MapView", "setup Left button");
+        buttonLeft = findViewById(R.id.buttonLeft);
+        //search the street if the button is clicked
+        buttonLeft.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                movetoPrevArticle();
+            }
+        });
+        buttonLeft.setVisibility(View .GONE);
+
+        Log.i("MapView", "setup Right button");
+        buttonRight = findViewById(R.id.buttonRight);
+        //search the street if the button is clicked
+        buttonRight.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                movetoNextArticle();
+            }
+        });
+        buttonRight.setVisibility(View .GONE);
+
     }
 
     @Override
@@ -205,6 +247,10 @@ public class MapsActivity extends FragmentActivity implements
         Log.i("MapsActivity", "onResume is running");
         //set up the map if needed
         setUpMapIfNeeded();
+        buttonLeft.setVisibility(View .GONE);
+        buttonRight.setVisibility(View .GONE);
+        markers.clear();
+        searchedMarkers.clear();
         //connect to Google API Client
         mGoogleApiClient.connect();
         attachDatabaseReadListener();
@@ -244,11 +290,12 @@ public class MapsActivity extends FragmentActivity implements
                 //scan if the title match the street name in the array list
                 for (int i = 0; i < keyList.size(); i++) {
                     if (marker != null && marker.getSnippet().equals(keyList.get(i))) {
+                        //send the current username to the shared preference
                         sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
                         sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
                         sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
-                        //send the current username to the shared preference
                         sharedPref.edit().putString("Current User", mUsername).apply();
+                        sharedPref.edit().putStringSet("Expired Key", expiredKey).apply();
                         if(articleList.get(i).getPhotoURL() != null) {
                             sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();
                         }
@@ -374,6 +421,7 @@ public class MapsActivity extends FragmentActivity implements
                     Article article1 = dataSnapshot.getValue(Article.class);
 
                     //create 2 string of date
+                    //this format should have the same format in the Article class
                     SimpleDateFormat myFormat = new SimpleDateFormat("dd MM yyyy");
                     String inputString1 = article1.printDate();         //the date from the article
                     String inputString2 = myFormat.format(new Date());  //current date
@@ -385,8 +433,12 @@ public class MapsActivity extends FragmentActivity implements
                         long diff = date2.getTime() - date1.getTime();
                         //convert the difference into days
                         diff = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+                        Log.i("Maps Activity", article1.getOwner() + "'s article day difference is " +
+                        String.valueOf(diff) + " days");
                         //if this article exceeds the expired day
                         if (diff >= expiredTime) {
+                            //store the expired article key
+                            expiredKey.add(dataSnapshot.getKey());
                             //remove the article from the database
                             mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
                         }
@@ -397,13 +449,13 @@ public class MapsActivity extends FragmentActivity implements
                             String key = dataSnapshot.getKey();
                             keyList.add(key);
                             //create a new marker based on the article information and location
-                            mMap.addMarker(new MarkerOptions()
+                            Marker m = mMap.addMarker(new MarkerOptions()
                                     //the position is based on the pre-defined latitude and longitude of the article
                                     .position(new LatLng(article1.getLatitude(), article1.getLongitude()))
                                     //the title of the marker is the owner name
                                     .title(article1.getOwner())
                                     .snippet(key));
-
+                            markers.add(m);
                             Log.i("MapsActivity", article1.getOwner() + "'s Article added");
                         }
                     } catch (ParseException e) {
@@ -449,5 +501,79 @@ public class MapsActivity extends FragmentActivity implements
     private void onSignedOutCleanUp() {
         mUsername = ANONYMOUS;          //set username back to default
         detachDatabaseReadListener();   //detach the listener
+    }
+
+    // function to search for articles
+    private void searchArticles(){
+        boolean articleFound = false; // boolean whether any article is found
+        searchedMarkers.clear(); // clear the array of markers from previously searched markers
+        Log.i("Maps Activity", "Searching for articles");
+        EditText searchBar = (EditText) findViewById(R.id.search); // EditText variable for search bar
+        String searchTitle = searchBar.getText().toString(); // obtain the text in the search bar
+        // match the text in the search bar against the article owners
+        for(int i = 0; i < articleList.size(); i++){
+            // if a match is found
+            if (searchTitle.toLowerCase().equals(articleList.get(i).getOwner().toLowerCase())){
+                // add the respective markers of the articles found into a separate array
+                searchedMarkers.add(markers.get(i));
+                // and set the boolean to true
+                articleFound = true;
+            }
+        }
+        if (articleFound == true){ // if an article with the matching owner is found
+            buttonLeft.setVisibility(View .VISIBLE);
+            buttonRight.setVisibility(View .VISIBLE);
+            //get the position of the first found article
+            LatLng latLng = searchedMarkers.get(0).getPosition();
+            // show the information of the marker so that the user can click
+            searchedMarkers.get(0).showInfoWindow();
+            //set the camera to the found street
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
+            // prompt informing the user of a successful search
+            Log.i("MapView", "Found " + searchedMarkers.get(0).getTitle() + "'s article");
+            Toast.makeText(this, "Found " + searchedMarkers.get(0).getTitle() + "'s article", Toast.LENGTH_LONG).show();
+        }
+        else {
+            buttonLeft.setVisibility(View .GONE);
+            buttonRight.setVisibility(View .GONE);
+            // prompt informing the user of an unsuccessful search
+            Log.i("MapView", "Cannot find " + searchBar.getText().toString() + "'s article");
+            Toast.makeText(this, "Cannot find " + searchBar.getText().toString() + "'s article", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // method executed for onClick of the left button
+    private void movetoPrevArticle(){
+        // only executed if there are articles found
+        if (searchedMarkers.size() != 0){
+            // change the index of the marker displayed
+            searchedMarkersIndex -= 1;
+            // in case the button is pressed at the first marker, move to last marker
+            if (searchedMarkersIndex < 0){
+                searchedMarkersIndex = searchedMarkers.size() - 1;
+            }
+            // move camera to marker and display its information
+            LatLng latLng = searchedMarkers.get(searchedMarkersIndex).getPosition();
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
+            searchedMarkers.get(searchedMarkersIndex).showInfoWindow();
+            Log.i("Maps Activity", "Showing marker's info");
+        }
+    }
+    // method executed for onClick of the right button
+    private void movetoNextArticle(){
+        // only executed if there are articles found
+        if (searchedMarkers.size() != 0){
+            // change the index of the marker to be displayed
+            searchedMarkersIndex += 1;
+            // in case the button is pressed at the last marker, move to first article
+            if (searchedMarkersIndex > searchedMarkers.size() - 1){
+                searchedMarkersIndex = 0;
+            }
+            // move camera to marker and display its information
+            LatLng latLng = searchedMarkers.get(searchedMarkersIndex).getPosition();
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
+            searchedMarkers.get(searchedMarkersIndex).showInfoWindow();
+            Log.i("Maps Activity", "Showing marker's info");
+        }
     }
 }

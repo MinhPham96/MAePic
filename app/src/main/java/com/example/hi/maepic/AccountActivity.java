@@ -118,6 +118,7 @@ public class AccountActivity extends AppCompatActivity {
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            buttonPost.setEnabled(false);
             if(!editText.getText().toString().replace(" ","").isEmpty() || selectedImageUri != null) {
                 if (selectedImageUri != null) {
                     StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
@@ -142,6 +143,7 @@ public class AccountActivity extends AppCompatActivity {
                     editText.setText("");
                 }
             }
+            buttonPost.setEnabled(true);
             }
         });
 

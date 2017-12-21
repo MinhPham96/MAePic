@@ -1,112 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.example.hi.maepic.InfoView">
+    android:id="@+id/scrollview"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
 
-    <ImageView
-        android:id="@+id/imageViewAvatar"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="30dp"
-        app:srcCompat="@drawable/com_facebook_button_icon_blue" />
+    >
 
-    <TextView
-        android:id="@+id/ownerText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp"
-        android:text="Owner Name"
-        android:textStyle="bold"
-        android:textSize="18dp"
-        android:textColor="#000"
-        app:layout_constraintVertical_bias="0.1" />
-
-    <TextView
-        android:id="@+id/contentText"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ownerText"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
-        android:text="Note that the API key is linked to the encryption key used to sign the APK"
-        android:textSize="15sp"
-        android:textColor="#7F7E7E"
-        app:layout_constraintVertical_bias="0.1" />
-
-    <ImageView
-        android:id="@+id/imageViewPhoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/contentText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
-        app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
-
-    <ProgressBar
-        android:id="@+id/progressBar1"
-        style="?android:attr/progressBarStyleHorizontal"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_below="@+id/imageViewPhoto" />
+        tools:context="com.example.hi.maepic.InfoView">
 
-    <Button
-        android:id="@+id/buttonLike"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_below="@+id/progressBar1"
-        android:layout_marginTop="10dp"
-        android:layout_toStartOf="@+id/editTextComment"
-        android:layout_margin="15dp"
-        android:background="@drawable/like" />
+        <ImageView
+            android:id="@+id/imageViewAvatar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            app:srcCompat="@drawable/com_facebook_button_icon_blue" />
 
-    <EditText
-        android:id="@+id/editTextComment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/progressBar1"
-        android:ems="10"
-        android:hint="Comment..." />
+        <TextView
+            android:id="@+id/ownerText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="30dp"
+            android:text="Owner Name"
+            android:textColor="#000"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            app:layout_constraintVertical_bias="0.1" />
 
-    <Button
-        android:id="@+id/buttonComment"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_toEndOf="@+id/editTextComment"
-        android:layout_margin="15dp"
-        android:layout_below="@+id/progressBar1"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/comment" />
+        <TextView
+            android:id="@+id/contentText"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/ownerText"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            android:text="Note that the API key is linked to the encryption key used to sign the APK"
+            android:textColor="#7F7E7E"
+            android:textSize="15sp"
+            app:layout_constraintVertical_bias="0.1" />
 
-    <ProgressBar
-        android:id="@+id/progressBar2"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_below="@+id/buttonLike" />
+        <ImageView
+            android:id="@+id/imageViewPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/contentText"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
 
-    <ListView
-        android:id="@+id/commentListView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/progressBar2"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginStart="10dp"
-        android:divider="@android:color/transparent"
-        android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll"
-        tools:listitem="@layout/item_comment" />
+        <ProgressBar
+            android:id="@+id/progressBar1"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageViewPhoto"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp" />
+
+        <Button
+            android:id="@+id/buttonLike"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_below="@+id/progressBar1"
+            android:layout_margin="15dp"
+            android:layout_marginTop="10dp"
+            android:layout_toStartOf="@+id/editTextComment"
+            android:background="@drawable/like" />
+
+        <EditText
+            android:id="@+id/editTextComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/progressBar1"
+            android:layout_centerHorizontal="true"
+            android:ems="10"
+            android:hint="Comment..." />
+
+        <Button
+            android:id="@+id/buttonComment"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_below="@+id/progressBar1"
+            android:layout_margin="15dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/editTextComment"
+            android:background="@drawable/comment" />
+
+        <ProgressBar
+            android:id="@+id/progressBar2"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/buttonLike"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp" />
+
+        <ListView
+            android:id="@+id/commentListView"
+            android:layout_width="wrap_content"
+            android:layout_height="5000sp"
+            android:layout_below="@+id/progressBar2"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:divider="@android:color/transparent"
+            android:stackFromBottom="false"
+            android:transcriptMode="alwaysScroll"
+            tools:listitem="@layout/item_comment" />
 
 
-</RelativeLayout>
+    </RelativeLayout>
+
+</ScrollView>

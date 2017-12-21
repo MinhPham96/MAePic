@@ -17,59 +17,80 @@
     <EditText
         android:id="@+id/search"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginRight="105dp"
-        android:layout_marginLeft="15dp"
-        android:hint="Street Point"
+        android:layout_height="45dp"
+        android:layout_marginRight="48dp"
+        android:layout_marginLeft="48dp"
+        android:hint="User name ..."
         android:padding="15dp"
-        android:ems="10"
+        android:textSize="15dp"
         android:inputType="textPersonName"
         android:background="#ffffff"
-        android:text=""
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintVertical_bias="0.05"
         />
 
     <Button
         android:id="@+id/buttonSearch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Search"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/search"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.05"
-        app:layout_constraintHorizontal_bias="0.95"
+        app:layout_constraintVertical_bias="0.015"
+        app:layout_constraintHorizontal_bias="0.85"
         />
 
     <Button
         android:id="@+id/buttonAccount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Account"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.95"
-        app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintVertical_bias="0.9"
+        app:layout_constraintHorizontal_bias="0.02"
+        android:background="@drawable/home"
         />
 
     <Button
         android:id="@+id/buttonSignOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sign Out"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.95"
-        app:layout_constraintHorizontal_bias="0.95"
+        app:layout_constraintVertical_bias="0.9"
+        app:layout_constraintHorizontal_bias="0.98"
+        android:background="@drawable/out"
+        />
+
+    <Button
+        android:id="@+id/buttonLeft"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@id/buttonAccount"
+        app:layout_constraintTop_toTopOf="@+id/search"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.02"
+        android:background="@drawable/left"
+
+        />
+
+    <Button
+        android:id="@+id/buttonRight"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/right"
+        app:layout_constraintBottom_toBottomOf="@id/buttonSignOut"
+        app:layout_constraintTop_toTopOf="@+id/search"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.98"
         />
 
 </android.support.constraint.ConstraintLayout>

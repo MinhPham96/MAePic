@@ -1,7 +1,6 @@
 package com.example.hi.maepic;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,10 +18,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class InfoView extends AppCompatActivity {
 
@@ -41,7 +40,11 @@ public class InfoView extends AppCompatActivity {
     private String content;                             //the content of the article
     private String username;                            //the current user
     private String articleKey;                          //the article key ID
-    private String photoURL;
+    private String photoURL;                            //the photo URL
+    //the set is to get the key set from the maps activity
+    private Set<String> expiredKeySet = new HashSet<String>();
+    //while the list is to store the set since set does not support get function
+    private ArrayList<String> expiredKeyList;
 
     private ListView mCommentListView;                  //an instance of the list view
     private TextView editText;                          //the edit text to put in new comment
@@ -65,6 +68,10 @@ public class InfoView extends AppCompatActivity {
         username = sharedPref.getString("Current User", "anonymous");
         articleKey = sharedPref.getString("Article Key", "article");
         photoURL = sharedPref.getString("Photo URL", null);
+        //get the set from the shared preference
+        expiredKeySet = sharedPref.getStringSet("Expired Key", null);
+        //convert the set to the array list
+        expiredKeyList = new ArrayList<String>(expiredKeySet);
 
         //initialize the article
         TextView ownerText = (TextView) findViewById(R.id.ownerText);
@@ -117,6 +124,16 @@ public class InfoView extends AppCompatActivity {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     comment = dataSnapshot.getValue(Comment.class);
+                    //if there is expired key in the set
+                    if(expiredKeySet.size() != 0) {
+                        //check if any comment belongs to an expired article
+                        for(int key = 0; key < expiredKeyList.size(); key++) {
+                            if(expiredKeyList.get(key).equals(comment.getArticleKey())) {
+                                //remove the comment in the expired article
+                               mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
+                            }
+                        }
+                    }
                     //if the comment is from the current article
                     if(comment.getArticleKey().equals(articleKey)) {
                         //add the comment to the adapter to display

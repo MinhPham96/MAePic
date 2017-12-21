@@ -2,6 +2,7 @@ package com.example.hi.maepic;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,6 +32,11 @@ public class InfoView extends AppCompatActivity {
     private FirebaseDatabase mFirebaseDatabase;         //an instance for Firebase Database
     private DatabaseReference mDatabaseReference;       //an instance for the database listener
     private ChildEventListener mChildEventListener;     //an instance for the child listener in the database
+
+    private FirebaseAuth mFirebaseAuth;                         //an instance for the authentication
+    //an instance for the authentiation state listener
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    public static final int RC_SIGN_IN = 1;                     //a constance for sign in
 
     private SharedPreferences sharedPref;               //an instance for the shared preference
 
@@ -61,11 +70,12 @@ public class InfoView extends AppCompatActivity {
         //set the reference to specific on the "streets" child in the database
         mDatabaseReference = mFirebaseDatabase.getReference().child("comments");
 
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
         sharedPref = this.getSharedPreferences("com.example.app", Context.MODE_PRIVATE);
         //get the values from the previous activity (MapsActivity)
         ownerName = sharedPref.getString("Article Owner", "anonymous");
         content = sharedPref.getString("Article Content", "This is a content");
-        username = sharedPref.getString("Current User", "anonymous");
         articleKey = sharedPref.getString("Article Key", "article");
         photoURL = sharedPref.getString("Photo URL", null);
         //get the set from the shared preference
@@ -100,9 +110,6 @@ public class InfoView extends AppCompatActivity {
         mCommentAdapter = new CommentAdapter(this, R.layout.item_comment, commentList);
         mCommentListView.setAdapter(mCommentAdapter);
 
-        //attach database listener
-        attachDatabaseReadListener();
-
         //when user send the comment
         commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,6 +123,49 @@ public class InfoView extends AppCompatActivity {
             }
             }
         });
+
+        Log.i("Info View", "setup Firebase Authentication");
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            //when the authentication state changed (eg. sign in, sign out)
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                //get the user from the database
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                //if user is signed in
+                if (user != null) {
+                    username = user.getDisplayName();
+                    Log.i("Info View", "Signed In");
+                }
+                else {
+                    Log.i("Info View", "Signed Out");
+                    //stop the database acitivity
+                    //create a sign in menu
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()            //create a sign in instance
+                                    .setIsSmartLockEnabled(false)           //disable smart lock feature
+                                    .setProviders(AuthUI.EMAIL_PROVIDER)    //set the sign in type to email
+                                    .build(), RC_SIGN_IN);                  //build the sign in menu
+                }
+            }
+        };
+
+        //attach database listener
+        attachDatabaseReadListener();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mAuthStateListener != null) {
+            mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
 
     private void attachDatabaseReadListener() {

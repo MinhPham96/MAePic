@@ -16,11 +16,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,6 +50,11 @@ public class AccountActivity extends AppCompatActivity {
     private ChildEventListener mChildEventListener;     //an instance for the child listener in the database
     private FirebaseStorage mFirebaseStorage;
     private StorageReference mPhotoStorageReference;
+
+    private FirebaseAuth mFirebaseAuth;                         //an instance for the authentication
+    //an instance for the authentiation state listener
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    public static final int RC_SIGN_IN = 1;                     //a constance for sign in
 
     private ArticleAdapter mArticleAdapter;             //the comment adapter is used as the same as a list
     private Article article;                            //a comment instance
@@ -76,12 +84,10 @@ public class AccountActivity extends AppCompatActivity {
         mDatabaseReference = mFirebaseDatabase.getReference().child("articles");
         mPhotoStorageReference = mFirebaseStorage.getReference().child("article_photos");
 
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
         sharedPref = this.getSharedPreferences("com.example.app", Context.MODE_PRIVATE);
 
-        username = sharedPref.getString("Current User", "anonymous");
-        Log.i("AccountActivity", username);
-        userKey = sharedPref.getString("User Key", "nothing");
-        Log.i("AccountActivity", userKey);
         latitude = (double) sharedPref.getFloat("Current Latitude", 0);
         Log.i("AccountActivity", String.valueOf(latitude));
         longitude = (double) sharedPref.getFloat("Current Longitude", 0);
@@ -147,7 +153,49 @@ public class AccountActivity extends AppCompatActivity {
             }
         });
 
+        Log.i("Account Activity", "setup Firebase Authentication");
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            //when the authentication state changed (eg. sign in, sign out)
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                //get the user from the database
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                //if user is signed in
+                if (user != null) {
+                    //Initialize the database
+                    username = user.getDisplayName();
+                    userKey = user.getUid();
+                    Log.i("Account Activity", "Signed In");
+                }
+                else {
+                    Log.i("Account Activity", "Signed Out");
+                    //stop the database acitivity
+                    //create a sign in menu
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()            //create a sign in instance
+                                    .setIsSmartLockEnabled(false)           //disable smart lock feature
+                                    .setProviders(AuthUI.EMAIL_PROVIDER)    //set the sign in type to email
+                                    .build(), RC_SIGN_IN);                  //build the sign in menu
+                }
+            }
+        };
+
         attachDatabaseReadListener();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mAuthStateListener != null) {
+            mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
 
     // onActivityResult function called depending on the request code sent
@@ -244,4 +292,5 @@ public class AccountActivity extends AppCompatActivity {
         // return the temporary file
         return mFileTemp;
     }
+
 }

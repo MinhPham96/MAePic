@@ -143,11 +143,11 @@ public class MapsActivity extends FragmentActivity implements
                 if (user != null) {
                     //Initialize the database
                     onSignedInInitialize(user.getDisplayName());
-                    Log.i("MapView", "Signed In");
+                    Log.i("Maps Activity", "Signed In");
                     Toast.makeText(MapsActivity.this, "Signed in", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    Log.i("MapView", "Signed Out");
+                    Log.i("Maps Activity", "Signed Out");
                     //stop the database acitivity
                     onSignedOutCleanUp();
                     //create a sign in menu
@@ -184,9 +184,6 @@ public class MapsActivity extends FragmentActivity implements
         buttonAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sharedPref.edit().putString("Current User", mUsername).apply();
-                sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
-
                 Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
                 startActivity(intent);
             }
@@ -294,7 +291,6 @@ public class MapsActivity extends FragmentActivity implements
                         sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
                         sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
                         sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
-                        sharedPref.edit().putString("Current User", mUsername).apply();
                         sharedPref.edit().putStringSet("Expired Key", expiredKey).apply();
                         if(articleList.get(i).getPhotoURL() != null) {
                             sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();

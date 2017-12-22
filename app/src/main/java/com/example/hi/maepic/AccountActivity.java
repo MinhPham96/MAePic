@@ -125,29 +125,29 @@ public class AccountActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
             buttonPost.setEnabled(false);
-            if(!editText.getText().toString().replace(" ","").isEmpty() || selectedImageUri != null) {
-                if (selectedImageUri != null) {
-                    StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
-                    photoRef.putFile(selectedImageUri)
-                            .addOnSuccessListener(AccountActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    // When the image has successfully uploaded, we get its download URL
-                                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                                    String content = editText.getText().toString();
+            String articleText = editText.getText().toString().replace(" ","");
+            if (selectedImageUri != null && !articleText.isEmpty()) {
+                StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
+                photoRef.putFile(selectedImageUri)
+                        .addOnSuccessListener(AccountActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                // When the image has successfully uploaded, we get its download URL
+                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                String content = editText.getText().toString();
 
-                                    Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), null, new Date());
-                                    mDatabaseReference.push().setValue(newArticle);
-                                    editText.setText("");
-                                    imageView.setVisibility(View.GONE);
-                                    selectedImageUri = null;
-                                }
-                            });
-                } else {
-                    String content = editText.getText().toString();
-                    Article newArticle = new Article(content, username, userKey, latitude, longitude, null, null, new Date());
-                    mDatabaseReference.push().setValue(newArticle);
-                    editText.setText("");
-                }
+                                Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), null, new Date());
+                                mDatabaseReference.push().setValue(newArticle);
+                                editText.setText("");
+                                imageView.setVisibility(View.GONE);
+                                selectedImageUri = null;
+                            }
+                        });
+            }
+            else if (!articleText.isEmpty()) {
+                String content = editText.getText().toString();
+                Article newArticle = new Article(content, username, userKey, latitude, longitude, null, null, new Date());
+                mDatabaseReference.push().setValue(newArticle);
+                editText.setText("");
             }
             buttonPost.setEnabled(true);
             }

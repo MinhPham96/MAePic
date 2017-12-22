@@ -78,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements
     //an instance for the authentiation state listener
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
+    private EditText searchBar;
     private Button buttonLeft;
     private Button buttonRight;
 
@@ -189,17 +190,18 @@ public class MapsActivity extends FragmentActivity implements
             }
         });
 
-        Log.i("MapView", "setup Search button");
+        searchBar = (EditText) findViewById(R.id.search); // EditText variable for search bar
+        Log.i("MapsActivity", "setup Search button");
         final Button buttonSearch = findViewById(R.id.buttonSearch);
         //search the name if the button is clicked
         buttonSearch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 searchArticles();
-                Log.i("Maps Activity", "Search button pressed");
+                Log.i("MapsActivity", "Search button pressed");
             }
         });
 
-        Log.i("MapView", "setup Left button");
+        Log.i("MapsActivity", "setup Left button");
         buttonLeft = findViewById(R.id.buttonLeft);
         //search the street if the button is clicked
         buttonLeft.setOnClickListener(new View.OnClickListener() {
@@ -209,7 +211,7 @@ public class MapsActivity extends FragmentActivity implements
         });
         buttonLeft.setVisibility(View .GONE);
 
-        Log.i("MapView", "setup Right button");
+        Log.i("MapsActivity", "setup Right button");
         buttonRight = findViewById(R.id.buttonRight);
         //search the street if the button is clicked
         buttonRight.setOnClickListener(new View.OnClickListener() {
@@ -248,6 +250,7 @@ public class MapsActivity extends FragmentActivity implements
         buttonRight.setVisibility(View .GONE);
         markers.clear();
         searchedMarkers.clear();
+        searchBar.setText("");
         //connect to Google API Client
         mGoogleApiClient.connect();
         attachDatabaseReadListener();
@@ -286,7 +289,7 @@ public class MapsActivity extends FragmentActivity implements
             public void onInfoWindowClick(Marker marker) {
                 //scan if the title match the street name in the array list
                 for (int i = 0; i < keyList.size(); i++) {
-                    if (marker != null && marker.getSnippet().equals(keyList.get(i))) {
+                    if (marker != null && marker.getTag().equals(keyList.get(i))) {
                         //send the current username to the shared preference
                         sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
                         sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
@@ -450,7 +453,8 @@ public class MapsActivity extends FragmentActivity implements
                                     .position(new LatLng(article1.getLatitude(), article1.getLongitude()))
                                     //the title of the marker is the owner name
                                     .title(article1.getOwner())
-                                    .snippet(key));
+                                    .snippet(article1.getText()));
+                            m.setTag(key);
                             markers.add(m);
                             Log.i("MapsActivity", article1.getOwner() + "'s Article added");
                         }
@@ -504,7 +508,6 @@ public class MapsActivity extends FragmentActivity implements
         boolean articleFound = false; // boolean whether any article is found
         searchedMarkers.clear(); // clear the array of markers from previously searched markers
         Log.i("Maps Activity", "Searching for articles");
-        EditText searchBar = (EditText) findViewById(R.id.search); // EditText variable for search bar
         String searchTitle = searchBar.getText().toString(); // obtain the text in the search bar
         // match the text in the search bar against the article owners
         for(int i = 0; i < articleList.size(); i++){

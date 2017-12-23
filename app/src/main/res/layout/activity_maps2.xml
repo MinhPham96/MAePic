@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.hi.maepic.MapsActivity"
+    android:background="#ffff"
     >
 
     <fragment
@@ -12,17 +13,20 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="48dp"
+
+
         />
 
     <EditText
         android:id="@+id/search"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:layout_marginRight="48dp"
-        android:layout_marginLeft="48dp"
+        android:layout_height="48dp"
         android:hint="User name ..."
         android:padding="15dp"
-        android:textSize="15dp"
+        android:textSize="15sp"
+        android:textAlignment="center"
         android:inputType="textPersonName"
         android:background="#ffffff"
         app:layout_constraintHorizontal_bias="0.5"
@@ -39,7 +43,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintVertical_bias="0.015"
-        app:layout_constraintHorizontal_bias="0.85"
+        app:layout_constraintHorizontal_bias="0.98"
         />
 
     <Button
@@ -50,7 +54,7 @@
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.9"
+        app:layout_constraintVertical_bias="1"
         app:layout_constraintHorizontal_bias="0.02"
         android:background="@drawable/home"
         />
@@ -63,7 +67,7 @@
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.9"
+        app:layout_constraintVertical_bias="1"
         app:layout_constraintHorizontal_bias="0.98"
         android:background="@drawable/out"
         />
@@ -76,7 +80,8 @@
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.02"
+        app:layout_constraintHorizontal_bias="0.3"
+        app:layout_constraintVertical_bias="1"
         android:background="@drawable/left"
 
         />
@@ -90,7 +95,8 @@
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.98"
+        app:layout_constraintHorizontal_bias="0.7"
+        app:layout_constraintVertical_bias="1"
         />
 
 </android.support.constraint.ConstraintLayout>

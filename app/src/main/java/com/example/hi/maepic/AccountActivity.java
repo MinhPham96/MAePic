@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -60,6 +61,7 @@ public class AccountActivity extends AppCompatActivity {
     private Article article;                            //a comment instance
     //this is the array list used as the reference for the comment adapter
     private ArrayList<Article> articleList = new ArrayList<Article>();
+    private ArrayList<String> keyList = new ArrayList<String>();
 
     private SharedPreferences sharedPref;       //an instance for the shared preference
 
@@ -182,6 +184,23 @@ public class AccountActivity extends AppCompatActivity {
         };
 
         attachDatabaseReadListener();
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                sharedPref.edit().putString("Article Key", keyList.get(position)).apply();
+                sharedPref.edit().putString("Article Owner", articleList.get(position).getOwner()).apply();
+                sharedPref.edit().putString("Article Content", articleList.get(position).getText()).apply();
+                if(articleList.get(position).getPhotoURL() != null) {
+                    sharedPref.edit().putString("Photo URL", articleList.get(position).getPhotoURL()).apply();
+                }
+                else {
+                    sharedPref.edit().putString("Photo URL", null).apply();
+                }
+                Intent intent = new Intent(AccountActivity.this,InfoView.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -255,6 +274,7 @@ public class AccountActivity extends AppCompatActivity {
                     if(article.getUid().equals(userKey)) {
                         //add the comment to the adapter to display
                         mArticleAdapter.add(article);
+                        keyList.add(dataSnapshot.getKey());
                     }
                 }
 

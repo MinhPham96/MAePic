@@ -278,7 +278,17 @@ public class AccountActivity extends AppCompatActivity {
                     }
                 }
 
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    //since the newly updated one will be check for censorship
+                    article = dataSnapshot.getValue(Article.class);
+                    //it will be located at the end of the adapter
+                    Article changedArticle = mArticleAdapter.getItem(mArticleAdapter.getCount() - 1);
+                    //remove the uncensored article text with the censored one
+                    mArticleAdapter.remove(changedArticle);
+                    mArticleAdapter.add(article);
+                    //notify the adapter to refresh the view
+                    mArticleAdapter.notifyDataSetChanged();
+                }
                 public void onChildRemoved(DataSnapshot dataSnapshot) {}
                 public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
                 public void onCancelled(DatabaseError databaseError) {}

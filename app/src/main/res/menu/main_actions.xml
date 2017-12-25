@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/search"
+        android:icon="@drawable/search"
+        android:title="search"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/home"
+        android:title="Home"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/aboutApp"
+        android:title="About App"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/signOut"
+        android:title="Sign Out"
+        app:showAsAction="never" />
+
+
+</menu>

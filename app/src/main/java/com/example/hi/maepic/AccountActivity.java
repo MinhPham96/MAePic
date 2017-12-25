@@ -81,7 +81,7 @@ public class AccountActivity extends AppCompatActivity {
         Log.i("AccountActivity", "setup Firebase Database");
         //get instance for both the database and authentiaction
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mFirebaseStorage = mFirebaseStorage.getInstance();
+        mFirebaseStorage = FirebaseStorage.getInstance();
         //set the reference to specific on the "streets" child in the database
         mDatabaseReference = mFirebaseDatabase.getReference().child("articles");
         mPhotoStorageReference = mFirebaseStorage.getReference().child("article_photos");
@@ -282,12 +282,14 @@ public class AccountActivity extends AppCompatActivity {
                     //since the newly updated one will be check for censorship
                     article = dataSnapshot.getValue(Article.class);
                     //it will be located at the end of the adapter
-                    Article changedArticle = mArticleAdapter.getItem(mArticleAdapter.getCount() - 1);
-                    //remove the uncensored article text with the censored one
-                    mArticleAdapter.remove(changedArticle);
-                    mArticleAdapter.add(article);
-                    //notify the adapter to refresh the view
-                    mArticleAdapter.notifyDataSetChanged();
+                    if(mArticleAdapter.getCount() > 0) {
+                        Article changedArticle = mArticleAdapter.getItem(mArticleAdapter.getCount() - 1);
+                        //remove the uncensored article text with the censored one
+                        mArticleAdapter.remove(changedArticle);
+                        mArticleAdapter.add(article);
+                        //notify the adapter to refresh the view
+                        mArticleAdapter.notifyDataSetChanged();
+                    }
                 }
                 public void onChildRemoved(DataSnapshot dataSnapshot) {}
                 public void onChildMoved(DataSnapshot dataSnapshot, String s) {}

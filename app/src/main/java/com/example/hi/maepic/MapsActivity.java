@@ -14,7 +14,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,6 +38,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -43,6 +48,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -52,7 +59,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class MapsActivity extends FragmentActivity implements
+public class MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback,                                     //for map set up
         GoogleApiClient.ConnectionCallbacks,                    //to connect to Google API Client for Google Map
         GoogleApiClient.OnConnectionFailedListener,             //checker for Google API Client
@@ -70,6 +77,8 @@ public class MapsActivity extends FragmentActivity implements
     private FirebaseDatabase mFirebaseDatabase;         //an instance for Firebase Database
     private DatabaseReference mDatabaseReference;       //an instance for the database listener
     private ChildEventListener mChildEventListener;     //an instance for the child listener in the database
+    private FirebaseStorage mFirebaseStrorage;
+
 
     public static final int RC_SIGN_IN = 1;                     //a constance for sign in
     private String mUsername;                                   //an instance that holds the username
@@ -128,6 +137,7 @@ public class MapsActivity extends FragmentActivity implements
         //get instance for both the database and authentiaction
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseStrorage = FirebaseStorage.getInstance();
         //set the reference to specific on the "streets" child in the database
         mDatabaseReference = mFirebaseDatabase.getReference().child("articles");
 
@@ -162,33 +172,33 @@ public class MapsActivity extends FragmentActivity implements
             }
         };
 
-        Log.i("MapsActivity", "setup Sign Out Button");
-        final Button buttonSignOut = findViewById(R.id.buttonSignOut);
-        buttonSignOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //sign out off the activity
-                AuthUI.getInstance().signOut(MapsActivity.this)
-                        //when the sign out is completed
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                //go back to the main menu
-                                Log.i("MapView", "Signed out, back to Main Menu");
-                                startActivity(new Intent(MapsActivity.this, MainActivity.class));
-                                finish();       //finish this activity
-                            }});
-            }
-        });
-
-        final Button buttonAccount = findViewById(R.id.buttonAccount);
-        buttonAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
-                startActivity(intent);
-            }
-        });
+//        Log.i("MapsActivity", "setup Sign Out Button");
+//        final Button buttonSignOut = findViewById(R.id.buttonSignOut);
+//        buttonSignOut.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //sign out off the activity
+//                AuthUI.getInstance().signOut(MapsActivity.this)
+//                        //when the sign out is completed
+//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<Void> task) {
+//                                //go back to the main menu
+//                                Log.i("MapView", "Signed out, back to Main Menu");
+//                                startActivity(new Intent(MapsActivity.this, MainActivity.class));
+//                                finish();       //finish this activity
+//                            }});
+//            }
+//        });
+//
+//        final Button buttonAccount = findViewById(R.id.buttonAccount);
+//        buttonAccount.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
+//                startActivity(intent);
+//            }
+//        });
 
         searchBar = (EditText) findViewById(R.id.search); // EditText variable for search bar
         Log.i("MapsActivity", "setup Search button");
@@ -309,6 +319,7 @@ public class MapsActivity extends FragmentActivity implements
                 }
             }
         });
+
     }
 
     @Override
@@ -438,6 +449,22 @@ public class MapsActivity extends FragmentActivity implements
                         if (diff >= expiredTime) {
                             //store the expired article key
                             expiredKey.add(dataSnapshot.getKey());
+                            if(article1.getPhotoURL() != null) {
+                                StorageReference photoRef = mFirebaseStrorage.getReferenceFromUrl(article1.getPhotoURL());
+                                photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        // File deleted successfully
+                                        Log.d(TAG, "onSuccess: deleted file");
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception exception) {
+                                        // Uh-oh, an error occurred!
+                                        Log.d(TAG, "onFailure: did not delete file");
+                                    }
+                                });
+                            }
                             //remove the article from the database
                             mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
                         }
@@ -539,6 +566,7 @@ public class MapsActivity extends FragmentActivity implements
             Log.i("MapView", "Cannot find " + searchBar.getText().toString() + "'s article");
             Toast.makeText(this, "Cannot find " + searchBar.getText().toString() + "'s article", Toast.LENGTH_LONG).show();
         }
+        searchBar.setText("");
     }
 
     // method executed for onClick of the left button
@@ -574,5 +602,48 @@ public class MapsActivity extends FragmentActivity implements
             searchedMarkers.get(searchedMarkersIndex).showInfoWindow();
             Log.i("Maps Activity", "Showing marker's info");
         }
+    }
+
+    // Action bar for MapsActivity
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_actions, menu);
+
+        return super.onCreateOptionsMenu(menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.search:
+                Toast.makeText(this, "Search button selected", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.signOut:
+                AuthUI.getInstance().signOut(MapsActivity.this)
+                        //when the sign out is completed
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                //go back to the main menu
+                                Log.i("MapView", "Signed out, back to Main Menu");
+                                startActivity(new Intent(MapsActivity.this, MainActivity.class));
+                                finish();       //finish this activity
+                            }});
+                return true;
+            case R.id.aboutApp:
+                Toast.makeText(this, "About App", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.home:
+                Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+                sharedPref.edit().putString("Current User", mUsername).apply();
+                sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
+
+                Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
+                startActivity(intent);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

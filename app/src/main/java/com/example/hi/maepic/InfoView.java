@@ -194,12 +194,15 @@ public class InfoView extends AppCompatActivity {
                     //since the newly updated one will be check for censorship
                     comment = dataSnapshot.getValue(Comment.class);
                     //it will be located at the end of the adapter
-                    Comment changedComment = mCommentAdapter.getItem(mCommentAdapter.getCount() - 1);
-                    //remove the uncensored comment with the censored one
-                    mCommentAdapter.remove(changedComment);
-                    mCommentAdapter.add(comment);
-                    //notify the adapter to refresh the view
-                    mCommentAdapter.notifyDataSetChanged();
+                    if(mCommentAdapter.getCount() > 0) {
+                        Comment changedComment = mCommentAdapter.getItem(mCommentAdapter.getCount() - 1);
+                        //remove the uncensored comment with the censored one
+                        mCommentAdapter.remove(changedComment);
+                        mCommentAdapter.add(comment);
+                        //notify the adapter to refresh the view
+                        mCommentAdapter.notifyDataSetChanged();
+                    }
+
                 }
                 public void onChildRemoved(DataSnapshot dataSnapshot) {}
                 public void onChildMoved(DataSnapshot dataSnapshot, String s) {}

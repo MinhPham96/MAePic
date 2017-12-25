@@ -24,37 +24,49 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
         super(context, resource, objects);
     }
 
+    private class ViewHolder {
+        TextView commentText, nameText, dateText;
+        ImageView photoImageView;
+
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         //get the layout from the xml of the cell
+        ViewHolder holder;
+
         if (convertView == null) {
             convertView = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.item_status, parent, false);
-        }
 
-        //get each component from the layout
-        TextView commentText = (TextView) convertView.findViewById(R.id.commentTextView);
-        TextView nameText = (TextView) convertView.findViewById(R.id.nameTextView);
-        TextView dateText = (TextView) convertView.findViewById(R.id.dateTextView);
-        ImageView photoImageView = (ImageView) convertView.findViewById(R.id.photoImageView);
+            holder = new ViewHolder();
+            //get each component from the layout
+            holder.commentText = (TextView) convertView.findViewById(R.id.commentTextView);
+            holder.nameText = (TextView) convertView.findViewById(R.id.nameTextView);
+            holder.dateText = (TextView) convertView.findViewById(R.id.dateTextView);
+            holder.photoImageView = (ImageView) convertView.findViewById(R.id.photoImageView);
+            convertView.setTag(holder);
+        }else{
+            holder = (ViewHolder) convertView.getTag();
+        }
 
         //this will access to each cell of the list
         Article article = getItem(position);
 
         boolean isPhoto = article.getPhotoURL() != null;
         if(isPhoto) {
-            photoImageView.setVisibility(View.VISIBLE);
-            Glide.with(photoImageView.getContext())
+            holder.photoImageView.setVisibility(View.VISIBLE);
+            Glide.with(holder.photoImageView.getContext())
                     .load(article.getPhotoURL())
-                    .into(photoImageView);
+                    .into(holder.photoImageView);
         }
         else {
-            photoImageView.setVisibility(View.GONE);
+            holder.photoImageView.setVisibility(View.GONE);
         }
 
         //change the cell components depending on the current object in the array list
-        commentText.setText(article.getText());
-        nameText.setText(article.getOwner());
-        if (article.getDate() != null) dateText.setText(article.printDate());
+        holder.commentText.setText(article.getText());
+        holder.nameText.setText(article.getOwner());
+        if (article.getDate() != null) holder.dateText.setText(article.printDate());
 
         return convertView;         //return the list cell to display
     }

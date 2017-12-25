@@ -14,7 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="48dp"
-        android:layout_marginBottom="48dp"
 
 
         />
@@ -46,42 +45,42 @@
         app:layout_constraintHorizontal_bias="0.98"
         />
 
-    <Button
-        android:id="@+id/buttonAccount"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/search"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="1"
-        app:layout_constraintHorizontal_bias="0.02"
-        android:background="@drawable/home"
-        />
+    <!--<Button-->
+    <!--android:id="@+id/buttonAccount"-->
+    <!--android:layout_width="45dp"-->
+    <!--android:layout_height="45dp"-->
+    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--app:layout_constraintTop_toTopOf="@+id/search"-->
+    <!--app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--app:layout_constraintRight_toRightOf="parent"-->
+    <!--app:layout_constraintVertical_bias="1"-->
+    <!--app:layout_constraintHorizontal_bias="0.02"-->
+    <!--android:background="@drawable/home"-->
+    <!--/>-->
 
-    <Button
-        android:id="@+id/buttonSignOut"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/search"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="1"
-        app:layout_constraintHorizontal_bias="0.98"
-        android:background="@drawable/out"
-        />
+    <!--<Button-->
+    <!--android:id="@+id/buttonSignOut"-->
+    <!--android:layout_width="45dp"-->
+    <!--android:layout_height="45dp"-->
+    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--app:layout_constraintTop_toTopOf="@+id/search"-->
+    <!--app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--app:layout_constraintRight_toRightOf="parent"-->
+    <!--app:layout_constraintVertical_bias="1"-->
+    <!--app:layout_constraintHorizontal_bias="0.98"-->
+    <!--android:background="@drawable/out"-->
+    <!--/>-->
 
     <Button
         android:id="@+id/buttonLeft"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        app:layout_constraintBottom_toBottomOf="@id/buttonAccount"
+        app:layout_constraintBottom_toBottomOf="@+id/map"
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.3"
-        app:layout_constraintVertical_bias="1"
+        app:layout_constraintHorizontal_bias="0.02"
+        app:layout_constraintVertical_bias="0.5"
         android:background="@drawable/left"
 
         />
@@ -91,12 +90,12 @@
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:background="@drawable/right"
-        app:layout_constraintBottom_toBottomOf="@id/buttonSignOut"
+        app:layout_constraintBottom_toBottomOf="@+id/map"
         app:layout_constraintTop_toTopOf="@+id/search"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.7"
-        app:layout_constraintVertical_bias="1"
+        app:layout_constraintHorizontal_bias="0.98"
+        app:layout_constraintVertical_bias="0.5"
         />
 
 </android.support.constraint.ConstraintLayout>

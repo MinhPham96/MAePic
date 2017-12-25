@@ -8,12 +8,6 @@
     android:layout_marginTop="10dp"
     tools:context="com.example.hi.maepic.AccountActivity">
 
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:srcCompat="@android:drawable/btn_star"
-        android:id="@+id/imageView" />
-
     <TextView
         android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
@@ -31,16 +25,15 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/nameTextView"
         android:layout_centerHorizontal="true"
+        android:hint="What is on your mind?"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="#7F7E7E"
-        android:textSize="20sp"
-        android:hint="What is on your mind?"
-        />
+        android:textSize="20sp" />
 
     <ImageView
         android:id="@+id/imageViewPhoto"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/commentEditText"
         android:layout_centerHorizontal="true"
         app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
@@ -94,6 +87,16 @@
         android:transcriptMode="alwaysScroll"
         tools:listitem="@layout/item_status"
         android:scrollbars="none"
+        />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/commentEditText"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/nameTextView"
         />
 
 

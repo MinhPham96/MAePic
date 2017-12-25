@@ -26,7 +26,7 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
 
     private class ViewHolder {
         TextView commentText, nameText, dateText;
-        ImageView photoImageView;
+        ImageView photoImageView, imageView;
 
     }
 
@@ -44,6 +44,7 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
             holder.nameText = (TextView) convertView.findViewById(R.id.nameTextView);
             holder.dateText = (TextView) convertView.findViewById(R.id.dateTextView);
             holder.photoImageView = (ImageView) convertView.findViewById(R.id.photoImageView);
+            holder.imageView = (ImageView) convertView.findViewById(R.id.imageView);
             convertView.setTag(holder);
         }else{
             holder = (ViewHolder) convertView.getTag();
@@ -66,6 +67,7 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
         //change the cell components depending on the current object in the array list
         holder.commentText.setText(article.getText());
         holder.nameText.setText(article.getOwner());
+        holder.imageView.setImageResource(article.getIconURL());
         if (article.getDate() != null) holder.dateText.setText(article.printDate());
 
         return convertView;         //return the list cell to display

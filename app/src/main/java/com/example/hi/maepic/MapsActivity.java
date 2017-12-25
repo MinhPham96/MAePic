@@ -474,13 +474,20 @@ public class MapsActivity extends AppCompatActivity implements
                             //get the article id and store it in another list
                             String key = dataSnapshot.getKey();
                             keyList.add(key);
+
+                            BitmapDrawable bitmapDraw =(BitmapDrawable)getResources().getDrawable(article1.getIconURL());
+                            Bitmap mBitmap = bitmapDraw.getBitmap();        //add the image to the bitmap
+                            //create a custom bitmap with smaller size to fit the map using the above bitmap
+                            Bitmap smallMarker = Bitmap.createScaledBitmap(mBitmap, 130, 130, false);
+
                             //create a new marker based on the article information and location
                             Marker m = mMap.addMarker(new MarkerOptions()
                                     //the position is based on the pre-defined latitude and longitude of the article
                                     .position(new LatLng(article1.getLatitude(), article1.getLongitude()))
                                     //the title of the marker is the owner name
                                     .title(article1.getOwner())
-                                    .snippet(article1.getText()));
+                                    .snippet(article1.getText())
+                                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
                             m.setTag(key);
                             markers.add(m);
                             Log.i("MapsActivity", article1.getOwner() + "'s Article added");

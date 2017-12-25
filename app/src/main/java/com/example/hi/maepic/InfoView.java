@@ -2,14 +2,19 @@ package com.example.hi.maepic;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -27,7 +32,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class InfoView extends AppCompatActivity {
+public class InfoView extends AppCompatActivity implements AbsListView.OnScrollListener{
 
     private FirebaseDatabase mFirebaseDatabase;         //an instance for Firebase Database
     private DatabaseReference mDatabaseReference;       //an instance for the database listener
@@ -58,6 +63,10 @@ public class InfoView extends AppCompatActivity {
     private ListView mCommentListView;                  //an instance of the list view
     private TextView editText;                          //the edit text to put in new comment
     private Button commentButton;                       //the button to send the comment
+    private int lastTopValue = 0;
+    private RelativeLayout header;
+    private ImageView photoImageView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,17 +92,33 @@ public class InfoView extends AppCompatActivity {
         //convert the set to the array list
         expiredKeyList = new ArrayList<String>(expiredKeySet);
 
-        //initialize the article
-        TextView ownerText = (TextView) findViewById(R.id.ownerText);
-        ownerText.setText(ownerName);
-        TextView contentText = (TextView) findViewById(R.id.contentText);
-        contentText.setText(content);
-
         //set up the list view, the text view and the button
         mCommentListView = (ListView) findViewById(R.id.commentListView);
-        editText = (TextView) findViewById(R.id.editTextComment);
-        commentButton = (Button) findViewById(R.id.buttonComment);
-        ImageView photoImageView = (ImageView) findViewById(R.id.imageViewPhoto);
+
+        //set up the adapter and add it to the list view
+        mCommentAdapter = new CommentAdapter(this, R.layout.item_comment, commentList);
+        mCommentListView.setAdapter(mCommentAdapter);
+
+
+        // Inflate custom header and attach it to the list
+        LayoutInflater inflater = getLayoutInflater();
+        ViewGroup header = (ViewGroup) inflater.inflate(R.layout.custom_header_status, mCommentListView, false);
+        mCommentListView.addHeaderView(header, null, false);
+
+        // Declare elements for the header
+        editText = (TextView) header.findViewById(R.id.editTextComment);
+        header = (RelativeLayout)header.findViewById(R.id.header);
+        commentButton = (Button)header.findViewById(R.id.buttonComment);
+        photoImageView = (ImageView)header.findViewById(R.id.imageViewPhoto);
+
+        //initialize the article
+        TextView ownerText = (TextView)header.findViewById(R.id.ownerText);
+        ownerText.setText(ownerName);
+        TextView contentText = (TextView)header.findViewById(R.id.contentText);
+        contentText.setText(content);
+
+        mCommentListView.setOnScrollListener(this);
+
 
         boolean isPhoto = photoURL != null;
         if(isPhoto) {
@@ -106,21 +131,17 @@ public class InfoView extends AppCompatActivity {
             photoImageView.setVisibility(View.GONE);
         }
 
-        //set up the adapter and add it to the list view
-        mCommentAdapter = new CommentAdapter(this, R.layout.item_comment, commentList);
-        mCommentListView.setAdapter(mCommentAdapter);
-
         //when user send the comment
         commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            if(!editText.getText().toString().replace(" ","").isEmpty()) {
-                //set new comment with: comment content, current user, the article key, and the date
-                Comment newComment = new Comment(editText.getText().toString(), username, articleKey, new Date());
-                editText.setText("");       //empty the text view
-                //push the new data to the database
-                mDatabaseReference.push().setValue(newComment);
-            }
+                if(!editText.getText().toString().replace(" ","").isEmpty()) {
+                    //set new comment with: comment content, current user, the article key, and the date
+                    Comment newComment = new Comment(editText.getText().toString(), username, articleKey, new Date());
+                    editText.setText("");       //empty the text view
+                    //push the new data to the database
+                    mDatabaseReference.push().setValue(newComment);
+                }
             }
         });
 
@@ -155,6 +176,21 @@ public class InfoView extends AppCompatActivity {
     }
 
     @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+//        Rect rect = new Rect();
+//        editText.getLocalVisibleRect(rect);
+//        if (lastTopValue != rect.top) {
+//            lastTopValue = rect.top;
+//            editText.setY((float) (rect.top / 2.0));
+//        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if(mAuthStateListener != null) {
@@ -180,7 +216,7 @@ public class InfoView extends AppCompatActivity {
                         for(int key = 0; key < expiredKeyList.size(); key++) {
                             if(expiredKeyList.get(key).equals(comment.getArticleKey())) {
                                 //remove the comment in the expired article
-                               mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
+                                mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
                             }
                         }
                     }

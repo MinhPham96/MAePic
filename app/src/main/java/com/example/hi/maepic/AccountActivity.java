@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,6 +73,11 @@ public class AccountActivity extends AppCompatActivity {
     String username;
     String userKey;
 
+    String[] textArray = { "Default","Important", "Eating", "Shopping", "Place" };
+    Integer[] imageArray = { R.drawable.ic_default, R.drawable.star, R.drawable.cuisine,
+            R.drawable.shopping, R.drawable.ic_camera };
+    private Spinner spinner;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,11 +128,19 @@ public class AccountActivity extends AppCompatActivity {
             }
         });
 
+        TextView spinnerTextView = (TextView) findViewById(R.id.spinnerTextView);
+        ImageView spinnerImageView =(ImageView)findViewById(R.id.spinnerImages);
+        spinner = (Spinner) findViewById(R.id.spinner);
+
+        SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.row, textArray, imageArray);
+        spinner.setAdapter(adapter);
+
         final Button buttonPost = findViewById(R.id.buttonPost);
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
             buttonPost.setEnabled(false);
+            final int row = spinner.getSelectedItemPosition();
             String articleText = editText.getText().toString().replace(" ","");
             if (selectedImageUri != null && !articleText.isEmpty()) {
                 StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
@@ -137,7 +151,7 @@ public class AccountActivity extends AppCompatActivity {
                                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
                                 String content = editText.getText().toString();
 
-                                Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), null, new Date());
+                                Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), imageArray[row], new Date());
                                 mDatabaseReference.push().setValue(newArticle);
                                 editText.setText("");
                                 imageView.setVisibility(View.GONE);
@@ -147,7 +161,7 @@ public class AccountActivity extends AppCompatActivity {
             }
             else if (!articleText.isEmpty()) {
                 String content = editText.getText().toString();
-                Article newArticle = new Article(content, username, userKey, latitude, longitude, null, null, new Date());
+                Article newArticle = new Article(content, username, userKey, latitude, longitude, null, imageArray[row], new Date());
                 mDatabaseReference.push().setValue(newArticle);
                 editText.setText("");
             }

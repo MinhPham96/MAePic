@@ -14,14 +14,14 @@ public class Article {
     private double latitude;
     private double longitude;
     private String photoURL;
-    private String iconURL;
+    private Integer iconURL;
     private Date date;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MM yyyy");
 
 
     Article() {}
 
-    Article(String text, String owner, String uid, double latitude, double longitude, String photoURL, String iconURL, Date date) {
+    Article(String text, String owner, String uid, double latitude, double longitude, String photoURL, Integer iconURL, Date date) {
         this.text = text;
         this.owner = owner;
         this.uid = uid;
@@ -38,7 +38,7 @@ public class Article {
     public double getLatitude() {return  latitude;}
     public double getLongitude() {return longitude;}
     public String getPhotoURL() {return photoURL;}
-    public String getIconURL() {return iconURL;}
+    public Integer getIconURL() {return iconURL;}
     public Date getDate() {return date;}
     public String printDate() {return  dateFormat.format(date);}
 

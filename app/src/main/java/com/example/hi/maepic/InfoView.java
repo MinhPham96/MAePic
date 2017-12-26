@@ -1,6 +1,7 @@
 package com.example.hi.maepic;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
@@ -63,8 +64,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
     private ListView mCommentListView;                  //an instance of the list view
     private TextView editText;                          //the edit text to put in new comment
     private Button commentButton;                       //the button to send the comment
-    private int lastTopValue = 0;
-    private RelativeLayout header;
+    private Button routeButton;
     private ImageView photoImageView;
 
 
@@ -109,6 +109,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
         editText = (TextView) header.findViewById(R.id.editTextComment);
         header = (RelativeLayout)header.findViewById(R.id.header);
         commentButton = (Button)header.findViewById(R.id.buttonComment);
+        routeButton = (Button)header.findViewById(R.id.buttonRoute);
         photoImageView = (ImageView)header.findViewById(R.id.imageViewPhoto);
 
         //initialize the article
@@ -144,6 +145,18 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                 }
             }
         });
+
+        routeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //set draw route flag to true
+                sharedPref.edit().putBoolean("Draw Route", true).apply();
+                //go back to map
+                Intent intent = new Intent(InfoView.this, MapsActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
         Log.i("Info View", "setup Firebase Authentication");
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {

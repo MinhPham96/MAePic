@@ -6,12 +6,13 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -30,13 +31,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -51,11 +52,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -79,12 +90,11 @@ public class MapsActivity extends AppCompatActivity implements
     private ChildEventListener mChildEventListener;     //an instance for the child listener in the database
     private FirebaseStorage mFirebaseStrorage;
 
-
     public static final int RC_SIGN_IN = 1;                     //a constance for sign in
     private String mUsername;                                   //an instance that holds the username
     public static final String ANONYMOUS = "anonymous";         //default username
     private FirebaseAuth mFirebaseAuth;                         //an instance for the authentication
-    //an instance for the authentiation state listener
+    //an instance for the authentication state listener
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     private EditText searchBar;
@@ -97,11 +107,16 @@ public class MapsActivity extends AppCompatActivity implements
     //Shared preference only support set so set is used to store the expired key
     Set<String> expiredKey = new HashSet<String>();
     private static final int expiredTime = 2;        //2 days
-    private static final String currentLocation  = "Your Location";
 
     ArrayList<Marker> markers = new ArrayList<Marker>(); // array of all markers on map
     ArrayList<Marker> searchedMarkers = new ArrayList<Marker>(); // array of searched markers
     int searchedMarkersIndex = 0;
+
+    private double currentLatitude;
+    private double currentLongitude;
+    private double desLatitude;
+    private double desLongitude;
+    private boolean drawRoute = false;
 
     @Override
     public void onBackPressed() {
@@ -172,34 +187,6 @@ public class MapsActivity extends AppCompatActivity implements
             }
         };
 
-//        Log.i("MapsActivity", "setup Sign Out Button");
-//        final Button buttonSignOut = findViewById(R.id.buttonSignOut);
-//        buttonSignOut.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //sign out off the activity
-//                AuthUI.getInstance().signOut(MapsActivity.this)
-//                        //when the sign out is completed
-//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Void> task) {
-//                                //go back to the main menu
-//                                Log.i("MapView", "Signed out, back to Main Menu");
-//                                startActivity(new Intent(MapsActivity.this, MainActivity.class));
-//                                finish();       //finish this activity
-//                            }});
-//            }
-//        });
-//
-//        final Button buttonAccount = findViewById(R.id.buttonAccount);
-//        buttonAccount.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
-//                startActivity(intent);
-//            }
-//        });
-
         searchBar = (EditText) findViewById(R.id.search); // EditText variable for search bar
         Log.i("MapsActivity", "setup Search button");
         final Button buttonSearch = findViewById(R.id.buttonSearch);
@@ -264,10 +251,12 @@ public class MapsActivity extends AppCompatActivity implements
         //connect to Google API Client
         mGoogleApiClient.connect();
         attachDatabaseReadListener();
+
         //add new authentication state listener if the current is null
         if(mAuthStateListener != null) {
             mFirebaseAuth.addAuthStateListener(mAuthStateListener);
         }
+
         Log.i("MapsActivity", "onResume finished");
     }
 
@@ -275,6 +264,9 @@ public class MapsActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         Log.i("MapsActivity", "onPause is running");
+
+        sharedPref.edit().putBoolean("Draw Route", false).apply();
+
         detachDatabaseReadListener();
         mMap.clear();
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
@@ -286,6 +278,15 @@ public class MapsActivity extends AppCompatActivity implements
         Log.i("MapsActivity", "onPause finished");
     }
 
+    //when user close the app, clear all the draw route instances store in the shared preference
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPref.edit().putBoolean("Draw Route", false).apply();
+        sharedPref.edit().putFloat("Des Latitude", 0).apply();
+        sharedPref.edit().putFloat("Des Longitude", 0).apply();
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.i("MapsActivity", "Map is ready");
@@ -293,6 +294,7 @@ public class MapsActivity extends AppCompatActivity implements
         mMap = googleMap;
         CustomInfoWindowAdapter adapter = new CustomInfoWindowAdapter(MapsActivity.this);
         mMap.setInfoWindowAdapter(adapter);
+
         //set to activate a method when click on the title of the marker
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
@@ -311,6 +313,10 @@ public class MapsActivity extends AppCompatActivity implements
                         else {
                             sharedPref.edit().putString("Photo URL", null).apply();
                         }
+
+                        //mark the chosen article latitude and longitude
+                        sharedPref.edit().putFloat("Des Latitude", (float)articleList.get(i).getLatitude()).apply();
+                        sharedPref.edit().putFloat("Des Longitude", (float)articleList.get(i).getLongitude()).apply();
 
                         //Move to the info page of the selected street
                         Intent intent = new Intent(MapsActivity.this, InfoView.class);
@@ -392,32 +398,49 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     private void handleNewLocation(Location location) {
-        //create a custom icon to differentiate the user location with the other street point marker
-        //get the resource image
-//        BitmapDrawable bitmapdraw =(BitmapDrawable)getResources().getDrawable(R.drawable.user_location);
-//        Bitmap mBitmap = bitmapdraw.getBitmap();        //add the image to the bitmap
-//        //create a custom bitmap with smaller size to fit the map using the above bitmap
-//        Bitmap smallMarker = Bitmap.createScaledBitmap(mBitmap, 130, 130, false);
-
         //get current location latitude and longitude
-        double currentLatitude = location.getLatitude();
-        double currentLongitude = location.getLongitude();
-        Log.i("MapView", "Current Latitude: " + String.valueOf(currentLatitude));
-        Log.i("MapView", "Current Longitude: " + String.valueOf(currentLongitude));
+        currentLatitude = location.getLatitude();
+        currentLongitude = location.getLongitude();
+        Log.i("Maps Activity", "Current Latitude: " + String.valueOf(currentLatitude));
+        Log.i("Maps Activity", "Current Longitude: " + String.valueOf(currentLongitude));
 
         sharedPref.edit().putFloat("Current Latitude", (float)currentLatitude).apply();
         sharedPref.edit().putFloat("Current Longitude", (float)currentLongitude).apply();
 
         //create new latlng instance based on latitude and longitude
-        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
+        LatLng origin = new LatLng(currentLatitude, currentLongitude);
 
-//        myMarker = mMap.addMarker(new MarkerOptions()
-//                .position(latLng)           //specify marker location
-//                .title(currentLocation)     //marker title
-//                //add the custom icon to the marker
-//                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
         //move current camera to marker position, with zoom value of 14
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 14.0f));
+
+        //get the draw route flag signal from the info view
+        drawRoute = sharedPref.getBoolean("Draw Route",  false);
+        if(drawRoute) {
+            //get the latitude and longitude stored in the shared preference
+            desLatitude = (double) sharedPref.getFloat("Des Latitude", 0);
+            desLongitude = (double) sharedPref.getFloat("Des Longitude", 0);
+            Log.i("Maps Activity", "Des Latitude: " + String.valueOf(desLatitude));
+            Log.i("Maps Activity", "Des Longitude: " + String.valueOf(desLongitude));
+            //set new LatLng for the the destination
+            LatLng des = new LatLng(desLatitude, desLongitude);
+
+            //create a custom icon to differentiate the user location with the other street point marker
+            //get the resource image
+            BitmapDrawable bitmapdraw =(BitmapDrawable)getResources().getDrawable(R.drawable.user_location);
+            Bitmap mBitmap = bitmapdraw.getBitmap();        //add the image to the bitmap
+            //create a custom bitmap with smaller size to fit the map using the above bitmap
+            Bitmap smallMarker = Bitmap.createScaledBitmap(mBitmap, 130, 130, false);
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(origin)           //specify marker location
+                    .title("Your Location")     //marker title
+                    //add the custom icon to the marker
+                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+
+            String url = getUrl(origin, des);       //convert the two points into JSON URL
+            FetchUrl fetchUrl = new FetchUrl();     //fetch the JSON URL
+            fetchUrl.execute(url);                  //execute the URL to draw the route
+        }
     }
 
     //create a function to listen to the user input
@@ -497,18 +520,10 @@ public class MapsActivity extends AppCompatActivity implements
                     }
 
                 }
-
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onCancelled(DatabaseError databaseError) {
-                }
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+                public void onChildRemoved(DataSnapshot dataSnapshot) {}
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+                public void onCancelled(DatabaseError databaseError) {}
             };
             //set this child event listener to the database reference
             mDatabaseReference.addChildEventListener(mChildEventListener);
@@ -652,5 +667,177 @@ public class MapsActivity extends AppCompatActivity implements
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //Methods for route drawing
+    private String getUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + sensor;
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
+
+
+        return url;
+    }
+
+    /**
+     * A method to download json data from url
+     */
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+            data = sb.toString();
+            Log.d("downloadUrl", data.toString());
+            br.close();
+
+        } catch (Exception e) {
+            Log.d("Exception", e.toString());
+        } finally {
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+    // Fetches data from url passed
+    private class FetchUrl extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try {
+                // Fetching the data from web service
+                data = downloadUrl(url[0]);
+                Log.d("Background Task data", data.toString());
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ParserTask parserTask = new ParserTask();
+
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
+
+        }
+    }
+
+    /**
+     * A class to parse the Google Places in JSON format
+     */
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                Log.d("ParserTask",jsonData[0].toString());
+                DataParser parser = new DataParser();
+                Log.d("ParserTask", parser.toString());
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+                Log.d("ParserTask","Executing routes");
+                Log.d("ParserTask",routes.toString());
+
+            } catch (Exception e) {
+                Log.d("ParserTask",e.toString());
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList<LatLng> points;
+            PolylineOptions lineOptions = null;
+
+            // Traversing through all the routes
+            for (int i = 0; i < result.size(); i++) {
+                points = new ArrayList<>();
+                lineOptions = new PolylineOptions();
+
+                // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);
+
+                // Fetching all the points in i-th route
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+
+                    points.add(position);
+                }
+
+                // Adding all the points in the route to LineOptions
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(Color.RED);
+
+                Log.d("onPostExecute","onPostExecute lineoptions decoded");
+
+            }
+
+            // Drawing polyline in the Google Map for the i-th route
+            if(lineOptions != null) {
+                mMap.addPolyline(lineOptions);
+            }
+            else {
+                Log.d("onPostExecute","without Polylines drawn");
+            }
+        }
     }
 }

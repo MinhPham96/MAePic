@@ -35,8 +35,8 @@ public class SpinnerAdapter extends ArrayAdapter<String> {
         TextView textView = (TextView) convertView.findViewById(R.id.spinnerTextView);
         textView.setText(contentArray[position]);
 
-        ImageView imageView = (ImageView)convertView.findViewById(R.id.spinnerImages);
-        imageView.setImageResource(imageArray[position]);
+//        ImageView imageView = (ImageView)convertView.findViewById(R.id.spinnerImages);
+//        imageView.setImageResource(imageArray[position]);
 
         return convertView;
 

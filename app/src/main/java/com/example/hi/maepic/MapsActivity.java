@@ -6,6 +6,7 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
@@ -301,26 +302,31 @@ public class MapsActivity extends AppCompatActivity implements
             public void onInfoWindowClick(Marker marker) {
                 //scan if the title match the street name in the array list
                 for (int i = 0; i < keyList.size(); i++) {
-                    if (marker != null && marker.getTag().equals(keyList.get(i))) {
-                        //send the current username to the shared preference
-                        sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
-                        sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
-                        sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
-                        sharedPref.edit().putStringSet("Expired Key", expiredKey).apply();
-                        if(articleList.get(i).getPhotoURL() != null) {
-                            sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();
-                        }
-                        else {
-                            sharedPref.edit().putString("Photo URL", null).apply();
-                        }
+                    try {
+                        if (marker != null && marker.getTag().equals(keyList.get(i))) {
+                            //send the current username to the shared preference
+                            sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
+                            sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
+                            sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
+                            sharedPref.edit().putStringSet("Expired Key", expiredKey).apply();
+                            sharedPref.edit().putInt("Icon URL", articleList.get(i).getIconURL()).apply();
+                            if (articleList.get(i).getPhotoURL() != null) {
+                                sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();
+                            } else {
+                                sharedPref.edit().putString("Photo URL", null).apply();
+                            }
 
-                        //mark the chosen article latitude and longitude
-                        sharedPref.edit().putFloat("Des Latitude", (float)articleList.get(i).getLatitude()).apply();
-                        sharedPref.edit().putFloat("Des Longitude", (float)articleList.get(i).getLongitude()).apply();
+                            //mark the chosen article latitude and longitude
+                            sharedPref.edit().putFloat("Des Latitude", (float) articleList.get(i).getLatitude()).apply();
+                            sharedPref.edit().putFloat("Des Longitude", (float) articleList.get(i).getLongitude()).apply();
 
-                        //Move to the info page of the selected street
-                        Intent intent = new Intent(MapsActivity.this, InfoView.class);
-                        startActivity(intent);
+                            //Move to the info page of the selected street
+                            Intent intent = new Intent(MapsActivity.this, InfoView.class);
+                            startActivity(intent);
+                        }
+                    }
+                    catch (NullPointerException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -498,6 +504,12 @@ public class MapsActivity extends AppCompatActivity implements
                             String key = dataSnapshot.getKey();
                             keyList.add(key);
 
+                            BitmapFactory.Options options = new BitmapFactory.Options();
+                            options.inJustDecodeBounds = true;
+                            BitmapFactory.decodeResource(getResources(), article1.getIconURL(), options);
+                            int imageHeight = options.outHeight;
+                            int imageWidth = options.outWidth;
+                            String imageType = options.outMimeType;
                             BitmapDrawable bitmapDraw =(BitmapDrawable)getResources().getDrawable(article1.getIconURL());
                             Bitmap mBitmap = bitmapDraw.getBitmap();        //add the image to the bitmap
                             //create a custom bitmap with smaller size to fit the map using the above bitmap
@@ -638,9 +650,6 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.search:
-                Toast.makeText(this, "Search button selected", Toast.LENGTH_SHORT).show();
-                return true;
             case R.id.signOut:
                 AuthUI.getInstance().signOut(MapsActivity.this)
                         //when the sign out is completed
@@ -652,9 +661,6 @@ public class MapsActivity extends AppCompatActivity implements
                                 startActivity(new Intent(MapsActivity.this, MainActivity.class));
                                 finish();       //finish this activity
                             }});
-                return true;
-            case R.id.aboutApp:
-                Toast.makeText(this, "About App", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.home:
                 Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();

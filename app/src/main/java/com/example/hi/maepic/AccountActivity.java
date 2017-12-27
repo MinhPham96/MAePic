@@ -74,8 +74,8 @@ public class AccountActivity extends AppCompatActivity {
     String userKey;
 
     String[] textArray = { "Default","Important", "Eating", "Shopping", "Place" };
-    Integer[] imageArray = { R.drawable.ic_default, R.drawable.star, R.drawable.cuisine,
-            R.drawable.shopping, R.drawable.ic_camera };
+    Integer[] imageArray = { R.drawable.ic_default, R.drawable.ic_star, R.drawable.ic_forkknife,
+            R.drawable.ic_shopping, R.drawable.ic_camera };
     private Spinner spinner;
 
 
@@ -100,6 +100,9 @@ public class AccountActivity extends AppCompatActivity {
         Log.i("AccountActivity", String.valueOf(latitude));
         longitude = (double) sharedPref.getFloat("Current Longitude", 0);
         Log.i("AccountActivity", String.valueOf(longitude));
+        username = sharedPref.getString("Current User", "anonymous");
+        userKey = sharedPref.getString("User Key", "anonymous");
+
 
         final EditText editText = (EditText) findViewById(R.id.commentEditText);
         final ListView listView = (ListView) findViewById(R.id.statusListView);
@@ -128,8 +131,6 @@ public class AccountActivity extends AppCompatActivity {
             }
         });
 
-        TextView spinnerTextView = (TextView) findViewById(R.id.spinnerTextView);
-        ImageView spinnerImageView =(ImageView)findViewById(R.id.spinnerImages);
         spinner = (Spinner) findViewById(R.id.spinner);
 
         SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.row, textArray, imageArray);
@@ -179,8 +180,6 @@ public class AccountActivity extends AppCompatActivity {
                 //if user is signed in
                 if (user != null) {
                     //Initialize the database
-                    username = user.getDisplayName();
-                    userKey = user.getUid();
                     Log.i("Account Activity", "Signed In");
                 }
                 else {
@@ -279,6 +278,8 @@ public class AccountActivity extends AppCompatActivity {
 
 
     private void attachDatabaseReadListener() {
+        Log.i("Account Activity", "Attach database listener");
+        Log.i("Account Activity", userKey);
         if (mChildEventListener == null) {
             mChildEventListener = new ChildEventListener() {
                 @Override
@@ -289,6 +290,7 @@ public class AccountActivity extends AppCompatActivity {
                         //add the comment to the adapter to display
                         mArticleAdapter.add(article);
                         keyList.add(dataSnapshot.getKey());
+                        Log.i("Account Activity", "Add article");
                     }
                 }
 

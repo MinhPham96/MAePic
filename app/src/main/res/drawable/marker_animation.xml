@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--Due to the large amount of image />-->
+    <!--Some image is commented out to reduce the size />-->
+    <!--And to prevent the app from crashing />-->
+    <!--if you receive a crash, consider comment out more image />-->
+    <item android:drawable="@drawable/abc7480" android:duration="50" />
+    <item android:drawable="@drawable/abc7482" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7483" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7484" android:duration="50" />
+    <item android:drawable="@drawable/abc7485" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7486" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7487" android:duration="50" />
+    <item android:drawable="@drawable/abc7488" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7489" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7490" android:duration="50" />
+    <item android:drawable="@drawable/abc7491" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7492" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7493" android:duration="50" />
+    <item android:drawable="@drawable/abc7494" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7495" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7496" android:duration="50" />
+    <item android:drawable="@drawable/abc7497" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7498" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7499" android:duration="50" />
+    <item android:drawable="@drawable/abc7500" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7501" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7502" android:duration="50" />
+    <item android:drawable="@drawable/abc7503" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7504" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7505" android:duration="50" />
+    <item android:drawable="@drawable/abc7506" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7507" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7508" android:duration="50" />
+    <item android:drawable="@drawable/abc7509" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7510" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7511" android:duration="50" />
+    <item android:drawable="@drawable/abc7512" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7513" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7514" android:duration="50" />
+    <item android:drawable="@drawable/abc7515" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7516" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7517" android:duration="50" />
+    <item android:drawable="@drawable/abc7518" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7519" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7520" android:duration="50" />
+    <item android:drawable="@drawable/abc7521" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7522" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7523" android:duration="50" />
+    <item android:drawable="@drawable/abc7524" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7525" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7526" android:duration="50" />
+    <item android:drawable="@drawable/abc7527" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7528" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7529" android:duration="50" />
+    <item android:drawable="@drawable/abc7530" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7531" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7532" android:duration="50" />
+    <item android:drawable="@drawable/abc7533" android:duration="50" />
+    <!--<item android:drawable="@drawable/abc7534" android:duration="50" />-->
+    <item android:drawable="@drawable/abc7535" android:duration="50" />
+    <item android:drawable="@drawable/abc7536" android:duration="50" />
+    <item android:drawable="@drawable/abc7537" android:duration="250" />
+
+
+</animation-list>

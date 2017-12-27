@@ -8,22 +8,21 @@
     android:layout_marginTop="10dp"
     tools:context="com.example.hi.maepic.AccountActivity">
 
-    <TextView
-        android:id="@+id/nameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/commentEditText"
-        android:textColor="#000"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        tools:text="Name" />
+    <!--<TextView-->
+        <!--android:id="@+id/nameTextView"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_alignStart="@+id/commentEditText"-->
+        <!--android:textColor="#000"-->
+        <!--android:textSize="18sp"-->
+        <!--android:textStyle="bold"-->
+        <!--tools:text="Name" />-->
 
     <EditText
         android:id="@+id/commentEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/nameTextView"
         android:layout_centerHorizontal="true"
         android:hint="What is on your mind?"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -32,9 +31,10 @@
 
     <ImageView
         android:id="@+id/imageViewPhoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/commentEditText"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_below="@+id/spinner"
+        android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true"
         app:srcCompat="@drawable/cast_ic_mini_controller_stop" />
 
@@ -86,18 +86,15 @@
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll"
         tools:listitem="@layout/item_status"
-        android:scrollbars="none"
-        />
+        android:scrollbars="none" />
 
     <Spinner
         android:id="@+id/spinner"
-        android:layout_width="300dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/commentEditText"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/nameTextView"
-        />
+        android:layout_below="@+id/commentEditText"
+
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

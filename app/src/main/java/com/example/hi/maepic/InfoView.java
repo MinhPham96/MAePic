@@ -3,7 +3,6 @@ package com.example.hi.maepic;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +19,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -27,6 +28,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,8 +39,10 @@ import java.util.Set;
 public class InfoView extends AppCompatActivity implements AbsListView.OnScrollListener{
 
     private FirebaseDatabase mFirebaseDatabase;         //an instance for Firebase Database
-    private DatabaseReference mDatabaseReference;       //an instance for the database listener
-    private ChildEventListener mChildEventListener;     //an instance for the child listener in the database
+    private DatabaseReference mCommentsDatabaseReference;       //an instance for the database listener
+    private DatabaseReference mArticleDatabaseReference;
+    private ChildEventListener mCommentChildEventListener;     //an instance for the child listener in the database
+    private FirebaseStorage mFirebaseStrorage;
 
     private FirebaseAuth mFirebaseAuth;                         //an instance for the authentication
     //an instance for the authentiation state listener
@@ -54,18 +59,22 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
     private String ownerName;                           //the owner of the article
     private String content;                             //the content of the article
     private String username;                            //the current user
+    private String userKey;
     private String articleKey;                          //the article key ID
+    private String articleOwnerKey;
     private String photoURL;                            //the photo URL
     private Integer iconURL;
     //the set is to get the key set from the maps activity
     private Set<String> expiredKeySet = new HashSet<String>();
     //while the list is to store the set since set does not support get function
     private ArrayList<String> expiredKeyList;
+    private ArrayList<String> commentKeyList = new ArrayList<String>();
 
     private ListView mCommentListView;                  //an instance of the list view
     private TextView editText;                          //the edit text to put in new comment
     private Button commentButton;                       //the button to send the comment
     private Button routeButton;
+    private Button deleteButton;
     private ImageView photoImageView, avatarImageView;
 
 
@@ -77,9 +86,10 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
         Log.i("InfoView", "setup Firebase Database");
         //get instance for both the database
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        //set the reference to specific on the "streets" child in the database
-        mDatabaseReference = mFirebaseDatabase.getReference().child("comments");
-
+        //set the reference to specific on the "comments" child in the database
+        mCommentsDatabaseReference = mFirebaseDatabase.getReference().child("comments");
+        mArticleDatabaseReference = mFirebaseDatabase.getReference().child("articles");
+        mFirebaseStrorage = FirebaseStorage.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
         sharedPref = this.getSharedPreferences("com.example.app", Context.MODE_PRIVATE);
@@ -87,6 +97,8 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
         ownerName = sharedPref.getString("Article Owner", "anonymous");
         content = sharedPref.getString("Article Content", "This is a content");
         articleKey = sharedPref.getString("Article Key", "article");
+        articleOwnerKey = sharedPref.getString("Article Owner ID", "anonymous");
+        userKey = sharedPref.getString("User Key", "anonymous");
         photoURL = sharedPref.getString("Photo URL", null);
         iconURL = sharedPref.getInt("Icon URL", 0);
         //get the set from the shared preference
@@ -112,8 +124,12 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
         header = (RelativeLayout)header.findViewById(R.id.header);
         commentButton = (Button)header.findViewById(R.id.buttonComment);
         routeButton = (Button)header.findViewById(R.id.buttonRoute);
+        deleteButton = (Button)header.findViewById(R.id.buttonDelete);
         photoImageView = (ImageView)header.findViewById(R.id.imageViewPhoto);
         avatarImageView = (ImageView)header.findViewById(R.id.imageViewAvatar);
+
+        if(userKey.equals(articleOwnerKey)) deleteButton.setVisibility(View.VISIBLE);
+        else deleteButton.setVisibility(View.GONE);
 
         //initialize the article
         TextView ownerText = (TextView)header.findViewById(R.id.ownerText);
@@ -145,7 +161,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                     Comment newComment = new Comment(editText.getText().toString(), username, articleKey, new Date());
                     editText.setText("");       //empty the text view
                     //push the new data to the database
-                    mDatabaseReference.push().setValue(newComment);
+                    mCommentsDatabaseReference.push().setValue(newComment);
                 }
             }
         });
@@ -161,6 +177,33 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
             }
         });
 
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for(int key = 0; key < commentKeyList.size(); key++) {
+                    mCommentsDatabaseReference.child(commentKeyList.get(key)).removeValue();
+                }
+                if(photoURL != null) {
+                    StorageReference photoRef = mFirebaseStrorage.getReferenceFromUrl(photoURL);
+                    photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            // File deleted successfully
+                            Log.d("Info View", "onSuccess: deleted file");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Uh-oh, an error occurred!
+                            Log.d("Info View", "onFailure: did not delete file");
+                        }
+                    });
+                }
+                mArticleDatabaseReference.child(articleKey).removeValue();
+                Intent intent = new Intent(InfoView.this, MapsActivity.class);
+                startActivity(intent);
+            }
+        });
 
         Log.i("Info View", "setup Firebase Authentication");
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
@@ -222,8 +265,8 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
     }
 
     private void attachDatabaseReadListener() {
-        if (mChildEventListener == null) {
-            mChildEventListener = new ChildEventListener() {
+        if (mCommentChildEventListener == null) {
+            mCommentChildEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     comment = dataSnapshot.getValue(Comment.class);
@@ -233,7 +276,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                         for(int key = 0; key < expiredKeyList.size(); key++) {
                             if(expiredKeyList.get(key).equals(comment.getArticleKey())) {
                                 //remove the comment in the expired article
-                                mDatabaseReference.child(dataSnapshot.getKey()).removeValue();
+                                mCommentsDatabaseReference.child(dataSnapshot.getKey()).removeValue();
                             }
                         }
                     }
@@ -241,6 +284,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                     if(comment.getArticleKey().equals(articleKey)) {
                         //add the comment to the adapter to display
                         mCommentAdapter.add(comment);
+                        commentKeyList.add(dataSnapshot.getKey());
                     }
                 }
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
@@ -254,6 +298,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                         mCommentAdapter.add(comment);
                         //notify the adapter to refresh the view
                         mCommentAdapter.notifyDataSetChanged();
+
                     }
 
                 }
@@ -261,7 +306,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                 public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
                 public void onCancelled(DatabaseError databaseError) {}
             };
-            mDatabaseReference.addChildEventListener(mChildEventListener);
+            mCommentsDatabaseReference.addChildEventListener(mCommentChildEventListener);
         }
     }
 }

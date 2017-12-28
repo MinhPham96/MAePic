@@ -307,9 +307,11 @@ public class MapsActivity extends AppCompatActivity implements
                             //send the current username to the shared preference
                             sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
                             sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
+                            sharedPref.edit().putString("Article Owner ID", articleList.get(i).getUid()).apply();
                             sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
                             sharedPref.edit().putStringSet("Expired Key", expiredKey).apply();
                             sharedPref.edit().putInt("Icon URL", articleList.get(i).getIconURL()).apply();
+                            sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
                             if (articleList.get(i).getPhotoURL() != null) {
                                 sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();
                             } else {
@@ -504,12 +506,6 @@ public class MapsActivity extends AppCompatActivity implements
                             String key = dataSnapshot.getKey();
                             keyList.add(key);
 
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                            options.inJustDecodeBounds = true;
-                            BitmapFactory.decodeResource(getResources(), article1.getIconURL(), options);
-                            int imageHeight = options.outHeight;
-                            int imageWidth = options.outWidth;
-                            String imageType = options.outMimeType;
                             BitmapDrawable bitmapDraw =(BitmapDrawable)getResources().getDrawable(article1.getIconURL());
                             Bitmap mBitmap = bitmapDraw.getBitmap();        //add the image to the bitmap
                             //create a custom bitmap with smaller size to fit the map using the above bitmap

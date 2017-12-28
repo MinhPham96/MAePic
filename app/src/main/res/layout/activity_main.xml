@@ -5,11 +5,17 @@
     android:layout_height="match_parent"
     tools:context="com.example.hi.maepic.MainActivity">
 
-    <ImageView
-        android:id="@+id/animation"
+    <!--<ImageView-->
+        <!--android:id="@+id/animation"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_above="@+id/linearLayout"/>-->
+
+    <com.felipecsl.gifimageview.library.GifImageView
+        android:id="@+id/welcome_gif"
+        android:scaleType="fitCenter"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/linearLayout"/>
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:id="@+id/linearLayout"

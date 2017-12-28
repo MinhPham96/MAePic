@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -34,7 +35,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Log.i("Main Activity", "Running onCreate");
+        Log.i("Main Activity", "Initialize Google Play Services");
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             buildGoogleApiClient();
         }
 
+        Log.i("Main Activity", "Setup GIF");
         //get the view from the layout for the gif
         //this is a custom view import from a Git project
         //check the app gradle to find more about the Git project
@@ -72,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onPause() {
         super.onPause();
+        Log.i("Main Activity", "Running onPause");
         //stop the animation when this view is paused
         gifImageView.stopAnimation();
     }
@@ -79,18 +83,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i("Main Activity", "Running onResume");
         //run the animation when this view is resumed
         gifImageView.startAnimation();
     }
 
     //this will move to the Maps Activity
     public void moveToMap(View view) {
+        Log.i("Main Activity", "Move to MapsActivity");
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
     }
 
     //setup Google API Client
     protected synchronized void buildGoogleApiClient() {
+        Log.i("Main Activity", "Setup Google API Client");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -103,12 +110,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+        Log.i("Main Activity", "Request Permission");
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                    Log.i("Main Activity", "Permission granted");
                     // permission was granted, build the Google API Client
                     if (ContextCompat.checkSelfPermission(this,
                             android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -120,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     }
 
                 } else {
-
+                    Log.i("Main Activity", "Permission denied");
                     // permission denied
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
@@ -138,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-
+                Log.i("Main Activity", "Show permission request");
                 // Show an explanation to the user asynchronously -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
@@ -180,5 +188,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    protected void onStart() {
+        Log.i("Main Activity", "Running onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        Log.i("Main Activity", "Running onRestart");
+        super.onRestart();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.i("Main Activity", "Running onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i("Main Activity", "Running onDestroy");
+        super.onDestroy();
     }
 }

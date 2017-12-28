@@ -92,6 +92,7 @@ public class AccountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+        Log.i("AccountActivity", "running onCreate");
 
         Log.i("AccountActivity", "setup Firebase Database");
         //get instance for both the database and authentication
@@ -116,6 +117,7 @@ public class AccountActivity extends AppCompatActivity {
         username = sharedPref.getString("Current User", "anonymous");
         userKey = sharedPref.getString("User Key", "anonymous");
 
+        Log.i("AccountActivity", "setup layout contains");
         //initialize all the layout variables
         final EditText editText = (EditText) findViewById(R.id.commentEditText);
         final ListView listView = (ListView) findViewById(R.id.statusListView);
@@ -134,43 +136,51 @@ public class AccountActivity extends AppCompatActivity {
         //set this adapter for the list view
         listView.setAdapter(mArticleAdapter);
 
+        Log.i("AccountActivity", "setup Camera button");
         //when user tap on the camera button
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //switch to the camera intent
+                Log.i("AccountActivity", "move to Camera");
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 startActivityForResult(cameraIntent, 0);
             }
         });
 
+        Log.i("AccountActivity", "setup Gallery button");
         //when user tap on the gallery button
         galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //switch to the gallery intent
+                Log.i("AccountActivity", "move to Gallery");
                 Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(galleryIntent, 1);
             }
         });
 
+        Log.i("AccountActivity", "setup Clear button");
         //when user tap on the gallery button
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.i("AccountActivity", "Clear image");
                 selectedImageUri = null;
                 imageView.setVisibility(View.GONE);
                 clearButton.setVisibility(View.GONE);
             }
         });
 
+        Log.i("AccountActivity", "setup Spinner");
         spinner = (Spinner) findViewById(R.id.spinner);     //initialize the spinner
         //setup the adapter for the spinner, this requires the context of this activity, the item layout xml
         //and the array lists that stores the data
         SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.row, textArray, imageArray);
         spinner.setAdapter(adapter);        //set the adapter for the spinner
 
+        Log.i("AccountActivity", "setup Post button");
         //when user tap on the button post
         final Button buttonPost = findViewById(R.id.buttonPost);
         buttonPost.setOnClickListener(new View.OnClickListener() {
@@ -203,6 +213,7 @@ public class AccountActivity extends AppCompatActivity {
                                 Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), imageArray[row], new Date());
                                 //push the new article to the database
                                 mDatabaseReference.push().setValue(newArticle);
+                                Log.i("AccountActivity", "Article pushed");
                                 //empty the edit text, hide the clear button and image view
                                 editText.setText("");
                                 imageView.setVisibility(View.GONE);
@@ -218,6 +229,7 @@ public class AccountActivity extends AppCompatActivity {
                 Article newArticle = new Article(content, username, userKey, latitude, longitude, null, imageArray[row], new Date());
                 //push the new article to the database
                 mDatabaseReference.push().setValue(newArticle);
+                Log.i("AccountActivity", "Article pushed");
                 editText.setText("");       //empty the edit text
             }
             buttonPost.setEnabled(true);    //enable the post button
@@ -225,7 +237,7 @@ public class AccountActivity extends AppCompatActivity {
         });
 
         //set up user authentication
-        Log.i("Account Activity", "setup Firebase Authentication");
+        Log.i("AccountActivity", "setup Firebase Authentication");
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             //when the authentication state changed (eg. sign in, sign out)
@@ -234,10 +246,10 @@ public class AccountActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 //if user is signed in
                 if (user != null) {
-                    Log.i("Account Activity", "Signed In");
+                    Log.i("AccountActivity", "Signed In");
                 }
                 else {
-                    Log.i("Account Activity", "Signed Out");
+                    Log.i("AccountActivity", "Signed Out");
                     //create a sign in menu
                     startActivityForResult(
                             AuthUI.getInstance()
@@ -249,20 +261,29 @@ public class AccountActivity extends AppCompatActivity {
             }
         };
 
-        attachDatabaseReadListener();
+        attachDatabaseReadListener();       //attach the listener for child "articles"
 
+        //when the user tap on the article in the list
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i("AccountActivity", "Article selected");
+                //send all the necessary values to the shared preference
+                //these values are needed for the functions in the info view
+                //the position identify the row number that is selected
                 sharedPref.edit().putString("Article Key", keyList.get(position)).apply();
                 sharedPref.edit().putString("Article Owner", articleList.get(position).getOwner()).apply();
+                sharedPref.edit().putString("Article Owner ID", articleList.get(position).getUid()).apply();
                 sharedPref.edit().putString("Article Content", articleList.get(position).getText()).apply();
+                sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
                 if(articleList.get(position).getPhotoURL() != null) {
                     sharedPref.edit().putString("Photo URL", articleList.get(position).getPhotoURL()).apply();
                 }
                 else {
                     sharedPref.edit().putString("Photo URL", null).apply();
                 }
+                Log.i("AccountActivity", "Move to InfoView");
+                //move to the info view of the selected article
                 Intent intent = new Intent(AccountActivity.this,InfoView.class);
                 startActivity(intent);
             }
@@ -272,6 +293,7 @@ public class AccountActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i("AccountActivity", "running onResume");
         if(mAuthStateListener != null) {
             mFirebaseAuth.addAuthStateListener(mAuthStateListener);
         }
@@ -280,6 +302,7 @@ public class AccountActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Log.i("AccountActivity", "running onPause");
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
 
@@ -308,10 +331,12 @@ public class AccountActivity extends AppCompatActivity {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        Log.i("AccountActivity", "Get image");
                         // obtaining Uri from flushed file
                         selectedImageUri = Uri.fromFile(file);
                     }
-                    // make the imageView visible
+                    Log.i("AccountActivity", "Display image");
+                    //display the image view and cancel button
                     imageView.setVisibility(View.VISIBLE);
                     clearButton.setVisibility(View.VISIBLE);
                     // display the captured image
@@ -320,10 +345,14 @@ public class AccountActivity extends AppCompatActivity {
                 break;
             case 1: // the case where the image is selected from gallery
                 if(resultCode == RESULT_OK){
+                    Log.i("AccountActivity", "Get image");
                     // get the Uri and again, display the image
                     selectedImageUri = imageReturnedIntent.getData();
+                    //display the image view and cancel button
                     imageView.setVisibility(View.VISIBLE);
                     clearButton.setVisibility(View.VISIBLE);
+                    Log.i("AccountActivity", "Display image");
+                    // display the captured image
                     imageView.setImageURI(selectedImageUri);
                 }
                 break;
@@ -332,19 +361,18 @@ public class AccountActivity extends AppCompatActivity {
 
 
     private void attachDatabaseReadListener() {
-        Log.i("Account Activity", "Attach database listener");
-        Log.i("Account Activity", userKey);
+        Log.i("AccountActivity", "Attach database listener");
         if (mChildEventListener == null) {
             mChildEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     article = dataSnapshot.getValue(Article.class);
-                    //if the comment is from the current article
+                    //if the article is from the current user
                     if(article.getUid().equals(userKey)) {
-                        //add the comment to the adapter to display
+                        //add the article to the adapter to display
                         mArticleAdapter.add(article);
                         keyList.add(dataSnapshot.getKey());
-                        Log.i("Account Activity", "Add article");
+                        Log.i("AccountActivity", "Add article");
                     }
                 }
 
@@ -359,6 +387,7 @@ public class AccountActivity extends AppCompatActivity {
                         mArticleAdapter.add(article);
                         //notify the adapter to refresh the view
                         mArticleAdapter.notifyDataSetChanged();
+                        Log.i("AccountActivity", "Checked article censorship");
                     }
                 }
                 public void onChildRemoved(DataSnapshot dataSnapshot) {}
@@ -371,6 +400,7 @@ public class AccountActivity extends AppCompatActivity {
 
     // function to create temporary file
     public File createImageFile() {
+        Log.i("AccountActivity", "convert camera photo to image file");
         // create timestamp for file
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         // create file name
@@ -395,4 +425,27 @@ public class AccountActivity extends AppCompatActivity {
         return mFileTemp;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("AccountActivity", "running onStart");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i("AccountActivity", "running onRestart");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i("AccountActivity", "running onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i("AccountActivity", "running onDestroy");
+    }
 }

@@ -98,31 +98,32 @@ public class MapsActivity extends AppCompatActivity implements
     //an instance for the authentication state listener
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
-    private EditText searchBar;
-    private Button buttonLeft;
-    private Button buttonRight;
+    private EditText searchBar;                 //an instance of the search bar
+    private Button buttonLeft;                  //an instance of button left
+    private Button buttonRight;                 //an instance of button right
 
     private SharedPreferences sharedPref;       //an instance for the shared preference
     ArrayList<String> keyList = new ArrayList<String>();
     ArrayList<Article> articleList = new ArrayList<Article>();
     //Shared preference only support set so set is used to store the expired key
     Set<String> expiredKey = new HashSet<String>();
-    private static final int expiredTime = 2;        //2 days
+    //set the expired time of the article, in this case 2 days
+    private static final int expiredTime = 2;
 
-    ArrayList<Marker> markers = new ArrayList<Marker>(); // array of all markers on map
+    ArrayList<Marker> markers = new ArrayList<Marker>();         // array of all markers on map
     ArrayList<Marker> searchedMarkers = new ArrayList<Marker>(); // array of searched markers
-    int searchedMarkersIndex = 0;
+    int searchedMarkersIndex = 0;               //the index of the searched marker
 
-    private double currentLatitude;
-    private double currentLongitude;
-    private double desLatitude;
-    private double desLongitude;
-    private boolean drawRoute = false;
+    private double currentLatitude;             //the latitude of the current user
+    private double currentLongitude;            //the longitude of the current user
+    private double desLatitude;                 //the latitude of the destination article
+    private double desLongitude;                //the longitude of the destination article
+    private boolean drawRoute = false;          //a flag to indicate is draw route is enabled or not
 
     @Override
     public void onBackPressed() {
         //prevent user from pressing back
-        //so user can only get back by signing out
+        //so user can only get back to main menu by signing out
         moveTaskToBack(true);
     }
 
@@ -131,6 +132,7 @@ public class MapsActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps2);
+        Log.i("MapsActivity", "Running onCreate");
 
         Log.i("MapsActivity", "setup map");
         setUpMapIfNeeded();
@@ -150,13 +152,15 @@ public class MapsActivity extends AppCompatActivity implements
                 .setInterval(1000);
 
         Log.i("MapsActivity", "setup Firebase Database");
-        //get instance for both the database and authentiaction
+        //get instance the database, storage and authentication
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseStrorage = FirebaseStorage.getInstance();
-        //set the reference to specific on the "streets" child in the database
+        //set the reference to specific on the "articles" child in the database
         mDatabaseReference = mFirebaseDatabase.getReference().child("articles");
 
+        Log.i("MapsActivity", "setup Shared Preference");
+        //initialize the shared preference
         sharedPref = this.getSharedPreferences("com.example.app", Context.MODE_PRIVATE);
 
         Log.i("MapsActivity", "setup Firebase Authentication");
@@ -201,22 +205,24 @@ public class MapsActivity extends AppCompatActivity implements
 
         Log.i("MapsActivity", "setup Left button");
         buttonLeft = findViewById(R.id.buttonLeft);
-        //search the street if the button is clicked
+        //move to next street if the button is clicked
         buttonLeft.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 movetoPrevArticle();
             }
         });
+        //initially this button is not available
         buttonLeft.setVisibility(View .GONE);
 
         Log.i("MapsActivity", "setup Right button");
         buttonRight = findViewById(R.id.buttonRight);
-        //search the street if the button is clicked
+        //move to previous street if the button is clicked
         buttonRight.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 movetoNextArticle();
             }
         });
+        //initially this button is not available
         buttonRight.setVisibility(View .GONE);
 
     }
@@ -241,48 +247,49 @@ public class MapsActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("MapsActivity", "onResume is running");
-        //set up the map if needed
-        setUpMapIfNeeded();
+        Log.i("MapsActivity", "Running onResume");
+        setUpMapIfNeeded();             //set up the map if needed
+        //hide the button left and right
         buttonLeft.setVisibility(View .GONE);
         buttonRight.setVisibility(View .GONE);
-        markers.clear();
-        searchedMarkers.clear();
-        searchBar.setText("");
-        //connect to Google API Client
-        mGoogleApiClient.connect();
-        attachDatabaseReadListener();
+        //these are required if any article is deleted in other activity to refresh the map
+        markers.clear();                //clear the markers array list
+        searchedMarkers.clear();        //clear the searched markers array list
+        searchBar.setText("");          //empty the search bar
+        mGoogleApiClient.connect();     //connect to Google API Client
+        attachDatabaseReadListener();   //attach database listener again
 
         //add new authentication state listener if the current is null
         if(mAuthStateListener != null) {
             mFirebaseAuth.addAuthStateListener(mAuthStateListener);
         }
 
-        Log.i("MapsActivity", "onResume finished");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i("MapsActivity", "onPause is running");
-
+        Log.i("MapsActivity", "Running onPause");
+        //disable the draw route, store this value to the shared preference
         sharedPref.edit().putBoolean("Draw Route", false).apply();
-
+        //detach the database listener
         detachDatabaseReadListener();
-        mMap.clear();
+        mMap.clear();       //clear the map
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         //disconnect the Google API Client
         if(mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
-        Log.i("MapsActivity", "onPause finished");
     }
 
     //when user close the app, clear all the draw route instances store in the shared preference
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.i("MapsActivity", "Running onDestroy");
+        //empty the draw route values in the shared preference
+        //prevent the draw route is trigger accidentally on next use
         sharedPref.edit().putBoolean("Draw Route", false).apply();
         sharedPref.edit().putFloat("Des Latitude", 0).apply();
         sharedPref.edit().putFloat("Des Longitude", 0).apply();
@@ -300,18 +307,24 @@ public class MapsActivity extends AppCompatActivity implements
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                //scan if the title match the street name in the array list
+                Log.i("MapsActivity", "Marker title tapped, searching article");
+                //scan if the tag in the marker the article key in the list
                 for (int i = 0; i < keyList.size(); i++) {
                     try {
                         if (marker != null && marker.getTag().equals(keyList.get(i))) {
-                            //send the current username to the shared preference
+                            Log.i("MapsActivity", "Article found, sending values");
+                            //send the necessary values to the shared preference
+                            //these values are used in the info view of the selected article
                             sharedPref.edit().putString("Article Key", keyList.get(i)).apply();
                             sharedPref.edit().putString("Article Owner", articleList.get(i).getOwner()).apply();
                             sharedPref.edit().putString("Article Owner ID", articleList.get(i).getUid()).apply();
                             sharedPref.edit().putString("Article Content", articleList.get(i).getText()).apply();
+                            //the expired article key is sent as well
+                            //to delete any comment that is related to the expired article
                             sharedPref.edit().putStringSet("Expired Key", expiredKey).apply();
                             sharedPref.edit().putInt("Icon URL", articleList.get(i).getIconURL()).apply();
                             sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
+                            //the photo is optional for each article so there need to be a check
                             if (articleList.get(i).getPhotoURL() != null) {
                                 sharedPref.edit().putString("Photo URL", articleList.get(i).getPhotoURL()).apply();
                             } else {
@@ -322,6 +335,7 @@ public class MapsActivity extends AppCompatActivity implements
                             sharedPref.edit().putFloat("Des Latitude", (float) articleList.get(i).getLatitude()).apply();
                             sharedPref.edit().putFloat("Des Longitude", (float) articleList.get(i).getLongitude()).apply();
 
+                            Log.i("MapsActivity", "Done, moving to InfoView");
                             //Move to the info page of the selected street
                             Intent intent = new Intent(MapsActivity.this, InfoView.class);
                             startActivity(intent);
@@ -386,13 +400,13 @@ public class MapsActivity extends AppCompatActivity implements
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
-            Log.i("MapView", "Map is null, requesting map");
+            Log.i("MapsActivity", "Map is null, requesting map");
             // Try to obtain the map from the SupportFragmentManager.
             SupportMapFragment mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             mapFrag.getMapAsync(this);
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                Log.i("MapView", "Setup Map");
+                Log.i("MapsActivity", "Setup Map");
                 setUpMap();
             }
         }
@@ -412,6 +426,7 @@ public class MapsActivity extends AppCompatActivity implements
         Log.i("Maps Activity", "Current Latitude: " + String.valueOf(currentLatitude));
         Log.i("Maps Activity", "Current Longitude: " + String.valueOf(currentLongitude));
 
+        //save the current latitude and longitude to the shared preference
         sharedPref.edit().putFloat("Current Latitude", (float)currentLatitude).apply();
         sharedPref.edit().putFloat("Current Longitude", (float)currentLongitude).apply();
 
@@ -423,8 +438,10 @@ public class MapsActivity extends AppCompatActivity implements
 
         //get the draw route flag signal from the info view
         drawRoute = sharedPref.getBoolean("Draw Route",  false);
+        //if draw route is enabled
         if(drawRoute) {
-            //get the latitude and longitude stored in the shared preference
+            Log.i("MapsActivity", "Drawing route");
+            //get the destination latitude and longitude stored in the shared preference
             desLatitude = (double) sharedPref.getFloat("Des Latitude", 0);
             desLongitude = (double) sharedPref.getFloat("Des Longitude", 0);
             Log.i("Maps Activity", "Des Latitude: " + String.valueOf(desLatitude));
@@ -432,6 +449,7 @@ public class MapsActivity extends AppCompatActivity implements
             //set new LatLng for the the destination
             LatLng des = new LatLng(desLatitude, desLongitude);
 
+            Log.i("MapsActivity", "Create user current location marker");
             //create a custom icon to differentiate the user location with the other street point marker
             //get the resource image
             BitmapDrawable bitmapdraw =(BitmapDrawable)getResources().getDrawable(R.drawable.user_location);
@@ -444,7 +462,7 @@ public class MapsActivity extends AppCompatActivity implements
                     .title("Your Location")     //marker title
                     //add the custom icon to the marker
                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
-
+            Log.i("MapsActivity", "Route drawn");
             String url = getUrl(origin, des);       //convert the two points into JSON URL
             FetchUrl fetchUrl = new FetchUrl();     //fetch the JSON URL
             fetchUrl.execute(url);                  //execute the URL to draw the route
@@ -480,6 +498,8 @@ public class MapsActivity extends AppCompatActivity implements
                         if (diff >= expiredTime) {
                             //store the expired article key
                             expiredKey.add(dataSnapshot.getKey());
+                            //if the article has a photo
+                            //delete the photo in the storage
                             if(article1.getPhotoURL() != null) {
                                 StorageReference photoRef = mFirebaseStrorage.getReferenceFromUrl(article1.getPhotoURL());
                                 photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -515,12 +535,13 @@ public class MapsActivity extends AppCompatActivity implements
                             Marker m = mMap.addMarker(new MarkerOptions()
                                     //the position is based on the pre-defined latitude and longitude of the article
                                     .position(new LatLng(article1.getLatitude(), article1.getLongitude()))
-                                    //the title of the marker is the owner name
+                                    //the title of the marker is the owner name, snippet as the text content
+                                    //and set the marker icon as the selected icon
                                     .title(article1.getOwner())
                                     .snippet(article1.getText())
                                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
-                            m.setTag(key);
-                            markers.add(m);
+                            m.setTag(key);      //the tag of the marker is the article ID
+                            markers.add(m);     //add the marker to the marker array list
                             Log.i("MapsActivity", article1.getOwner() + "'s Article added");
                         }
                     } catch (ParseException e) {
@@ -564,7 +585,7 @@ public class MapsActivity extends AppCompatActivity implements
     private void searchArticles(){
         boolean articleFound = false; // boolean whether any article is found
         searchedMarkers.clear(); // clear the array of markers from previously searched markers
-        Log.i("Maps Activity", "Searching for articles");
+        Log.i("MapsActivity", "Searching for articles");
         String searchTitle = searchBar.getText().toString(); // obtain the text in the search bar
         // match the text in the search bar against the article owners
         for(int i = 0; i < articleList.size(); i++){
@@ -577,6 +598,7 @@ public class MapsActivity extends AppCompatActivity implements
             }
         }
         if (articleFound == true){ // if an article with the matching owner is found
+            //show the button left and right
             buttonLeft.setVisibility(View .VISIBLE);
             buttonRight.setVisibility(View .VISIBLE);
             //get the position of the first found article
@@ -586,14 +608,15 @@ public class MapsActivity extends AppCompatActivity implements
             //set the camera to the found street
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
             // prompt informing the user of a successful search
-            Log.i("MapView", "Found " + searchedMarkers.get(0).getTitle() + "'s article");
+            Log.i("MapsActivity", "Found " + searchedMarkers.get(0).getTitle() + "'s article");
             Toast.makeText(this, "Found " + searchedMarkers.get(0).getTitle() + "'s article", Toast.LENGTH_LONG).show();
         }
         else {
+            //hide the button left and right
             buttonLeft.setVisibility(View .GONE);
             buttonRight.setVisibility(View .GONE);
             // prompt informing the user of an unsuccessful search
-            Log.i("MapView", "Cannot find " + searchBar.getText().toString() + "'s article");
+            Log.i("MapsActivity", "Cannot find " + searchBar.getText().toString() + "'s article");
             Toast.makeText(this, "Cannot find " + searchBar.getText().toString() + "'s article", Toast.LENGTH_LONG).show();
         }
         searchBar.setText("");
@@ -613,7 +636,8 @@ public class MapsActivity extends AppCompatActivity implements
             LatLng latLng = searchedMarkers.get(searchedMarkersIndex).getPosition();
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
             searchedMarkers.get(searchedMarkersIndex).showInfoWindow();
-            Log.i("Maps Activity", "Showing marker's info");
+            Log.i("MapsActivity", "Move to previous marker");
+            Log.i("MapsActivity", "Showing marker's info");
         }
     }
     // method executed for onClick of the right button
@@ -630,23 +654,26 @@ public class MapsActivity extends AppCompatActivity implements
             LatLng latLng = searchedMarkers.get(searchedMarkersIndex).getPosition();
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
             searchedMarkers.get(searchedMarkersIndex).showInfoWindow();
-            Log.i("Maps Activity", "Showing marker's info");
+            Log.i("MapsActivity", "Move to next marker");
+            Log.i("MapsActivity", "Showing marker's info");
         }
     }
 
     // Action bar for MapsActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.i("MapsActivity", "Create Option menu");
+        //get the menu layout for the option menu
         getMenuInflater().inflate(R.menu.main_actions, menu);
-
         return super.onCreateOptionsMenu(menu);
-
     }
 
+    //if any of the option is selected in the option menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.signOut:
+        switch (item.getItemId()) {     //check which option is selected
+            case R.id.signOut:          //sign out option
+                Log.i("MapsActivity", "Sign out option selected");
                 AuthUI.getInstance().signOut(MapsActivity.this)
                         //when the sign out is completed
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -658,11 +685,13 @@ public class MapsActivity extends AppCompatActivity implements
                                 finish();       //finish this activity
                             }});
                 return true;
-            case R.id.home:
-                Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+            case R.id.home:             //home option
+                Log.i("MapsActivity", "Home option selected");
+                //send the current user name and ID to the shared preference
                 sharedPref.edit().putString("Current User", mUsername).apply();
                 sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
-
+                //move to Account Activity
+                Log.i("MapsActivity", "Move to AccountActivity");
                 Intent intent = new Intent(MapsActivity.this, AccountActivity.class);
                 startActivity(intent);
                 return true;
@@ -673,27 +702,19 @@ public class MapsActivity extends AppCompatActivity implements
 
     //Methods for route drawing
     private String getUrl(LatLng origin, LatLng dest) {
-
+        Log.i("MapsActivity", "Get URL from origin and destination LatLng");
         // Origin of route
         String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
         // Destination of route
         String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-
         // Sensor enabled
         String sensor = "sensor=false";
-
         // Building the parameters to the web service
         String parameters = str_origin + "&" + str_dest + "&" + sensor;
-
         // Output format
         String output = "json";
-
         // Building the url to the web service
         String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-
-
         return url;
     }
 
@@ -701,37 +722,37 @@ public class MapsActivity extends AppCompatActivity implements
      * A method to download json data from url
      */
     private String downloadUrl(String strUrl) throws IOException {
+        Log.i("MapsActivity", "Download formatted URL");
         String data = "";
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(strUrl);
-
             // Creating an http connection to communicate with url
             urlConnection = (HttpURLConnection) url.openConnection();
-
             // Connecting to url
             urlConnection.connect();
-
             // Reading data from url
             iStream = urlConnection.getInputStream();
-
+            //create a buffered reader to scan the URL string
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
+            //create a string buffer
             StringBuffer sb = new StringBuffer();
-
+            //create an empty string of each line
             String line = "";
+            //add the line read from the buffered reader
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
-
+            //convert the string buffer to string
             data = sb.toString();
             Log.d("downloadUrl", data.toString());
-            br.close();
+            br.close();     //turn off buffered reader
 
         } catch (Exception e) {
             Log.d("Exception", e.toString());
         } finally {
+            //close the connection stream and disconnect the URL
             iStream.close();
             urlConnection.disconnect();
         }
@@ -841,5 +862,23 @@ public class MapsActivity extends AppCompatActivity implements
                 Log.d("onPostExecute","without Polylines drawn");
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("MapsActivity", "running onStart");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i("MapsActivity", "running onRestart");
+    }
+
+    @Override
+    protected void onStop() {
+        Log.i("MapsActivity", "running onStop");
+        super.onStop();
     }
 }

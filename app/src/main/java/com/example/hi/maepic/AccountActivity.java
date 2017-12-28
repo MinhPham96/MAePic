@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -50,33 +51,41 @@ public class AccountActivity extends AppCompatActivity {
     private FirebaseDatabase mFirebaseDatabase;         //an instance for Firebase Database
     private DatabaseReference mDatabaseReference;       //an instance for the database listener
     private ChildEventListener mChildEventListener;     //an instance for the child listener in the database
-    private FirebaseStorage mFirebaseStorage;
-    private StorageReference mPhotoStorageReference;
+    private FirebaseStorage mFirebaseStorage;           //an instance for Firebase Storage (for photo)
+    private StorageReference mPhotoStorageReference;    //an instance for the folder reference in the storage
 
-    private FirebaseAuth mFirebaseAuth;                         //an instance for the authentication
-    //an instance for the authentiation state listener
+    private FirebaseAuth mFirebaseAuth;                 //an instance for the authentication
+    //an instance for the authentication state listener
     private FirebaseAuth.AuthStateListener mAuthStateListener;
-    public static final int RC_SIGN_IN = 1;                     //a constance for sign in
+    public static final int RC_SIGN_IN = 1;             //a constance for sign in
 
-    private ArticleAdapter mArticleAdapter;             //the comment adapter is used as the same as a list
-    private Article article;                            //a comment instance
-    //this is the array list used as the reference for the comment adapter
+    private ArticleAdapter mArticleAdapter;             //the article adapter is used as the same as a list
+    private Article article;                            //a article instance
+    //this is the array list used as the reference for the article adapter
     private ArrayList<Article> articleList = new ArrayList<Article>();
+    //the key list stores all the ID of the article belong to this user
+    //this is used to parse to the Info view when user tap into the article in their article list
     private ArrayList<String> keyList = new ArrayList<String>();
 
-    private SharedPreferences sharedPref;       //an instance for the shared preference
+    private SharedPreferences sharedPref;   //an instance for the shared preference
 
-    private Uri selectedImageUri;
+    private Uri selectedImageUri;           //an instance that store the location of a photo in the device
+    private Button clearButton;             //an instance of the clear button
+    private ImageView imageView;            //an instance of the image view
 
-    double latitude = 0.0;
-    double longitude = 0.0;
-    String username;
-    String userKey;
+    double latitude = 0.0;      //an instance to store the user current latitude
+    double longitude = 0.0;     //an instance to store the user current longitude
+    String username;            //an instance to store the current user name
+    String userKey;             //an instance to store the current user ID
 
+    //this text array is used to display on the spinner
     String[] textArray = { "Default","Important", "Eating", "Shopping", "Place" };
+    //this Integer array contains all the image ID in the drawable
+    //these IDs are corresponded with the selection in the spinner
+    //the spinner provide user the option to select their own marker icon on the map for their articles
     Integer[] imageArray = { R.drawable.ic_default, R.drawable.ic_star, R.drawable.ic_forkknife,
             R.drawable.ic_shopping, R.drawable.ic_camera };
-    private Spinner spinner;
+    private Spinner spinner;    //an instance of the spinner
 
 
     @Override
@@ -85,17 +94,21 @@ public class AccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_account);
 
         Log.i("AccountActivity", "setup Firebase Database");
-        //get instance for both the database and authentiaction
+        //get instance for both the database and authentication
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseStorage = FirebaseStorage.getInstance();
-        //set the reference to specific on the "streets" child in the database
+        //set the reference to specific on the "articles" child in the database
         mDatabaseReference = mFirebaseDatabase.getReference().child("articles");
+        //set the reference to the "article_photos" folder in the storage
         mPhotoStorageReference = mFirebaseStorage.getReference().child("article_photos");
-
+        //get the instance for the authentication
+        //since the storage require authentication to access
         mFirebaseAuth = FirebaseAuth.getInstance();
 
+        Log.i("AccountActivity", "setup Shared Preference");
+        //initialize the shared preference
         sharedPref = this.getSharedPreferences("com.example.app", Context.MODE_PRIVATE);
-
+        //update the instance from the values parsed from the Maps Activity
         latitude = (double) sharedPref.getFloat("Current Latitude", 0);
         Log.i("AccountActivity", String.valueOf(latitude));
         longitude = (double) sharedPref.getFloat("Current Longitude", 0);
@@ -103,73 +116,115 @@ public class AccountActivity extends AppCompatActivity {
         username = sharedPref.getString("Current User", "anonymous");
         userKey = sharedPref.getString("User Key", "anonymous");
 
-
+        //initialize all the layout variables
         final EditText editText = (EditText) findViewById(R.id.commentEditText);
         final ListView listView = (ListView) findViewById(R.id.statusListView);
         final Button cameraButton = this.findViewById(R.id.buttonCamera);
         final Button galleryButton = this.findViewById(R.id.buttonGallery);
-        final ImageView imageView = this.findViewById(R.id.imageViewPhoto);
+        clearButton = this.findViewById(R.id.buttonClear);
+        imageView = this.findViewById(R.id.imageViewPhoto);
+        //hide the clear button and the image view for user photo selection
+        //since initially there is no photo selected or clear yet
         imageView.setVisibility(View.GONE);
+        clearButton.setVisibility(View.GONE);
 
+        //set up the article adapter
+        //this require the context of this activity, the item layout xml and the array list that stores the data
         mArticleAdapter = new ArticleAdapter(this, R.layout.item_status, articleList);
+        //set this adapter for the list view
         listView.setAdapter(mArticleAdapter);
 
+        //when user tap on the camera button
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //switch to the camera intent
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 startActivityForResult(cameraIntent, 0);
             }
         });
 
+        //when user tap on the gallery button
         galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //switch to the gallery intent
                 Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(galleryIntent, 1);
             }
         });
 
-        spinner = (Spinner) findViewById(R.id.spinner);
+        //when user tap on the gallery button
+        clearButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedImageUri = null;
+                imageView.setVisibility(View.GONE);
+                clearButton.setVisibility(View.GONE);
+            }
+        });
 
+        spinner = (Spinner) findViewById(R.id.spinner);     //initialize the spinner
+        //setup the adapter for the spinner, this requires the context of this activity, the item layout xml
+        //and the array lists that stores the data
         SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.row, textArray, imageArray);
-        spinner.setAdapter(adapter);
+        spinner.setAdapter(adapter);        //set the adapter for the spinner
 
+        //when user tap on the button post
         final Button buttonPost = findViewById(R.id.buttonPost);
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            buttonPost.setEnabled(false);
+            buttonPost.setEnabled(false);       //disable the button
+            //get the current selected icon option in the spinner
             final int row = spinner.getSelectedItemPosition();
+            //get the text from the edit text, and remove all the space
             String articleText = editText.getText().toString().replace(" ","");
+
+            //this app requires user to have a text content in their article
+            //the photo is optional
+            //if there is text content and photo selected
+            //the process of uploading the photo may take some times to finish
+            //when tap the post button, please wait for a moment before everything is updated
             if (selectedImageUri != null && !articleText.isEmpty()) {
+                //get the reference of the last position in the "article_photos" folder
                 StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
-                photoRef.putFile(selectedImageUri)
+                photoRef.putFile(selectedImageUri)      //upload the photo to the storage
                         .addOnSuccessListener(AccountActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                 // When the image has successfully uploaded, we get its download URL
                                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                //get the text content from the edit text
                                 String content = editText.getText().toString();
 
+                                //create new article with current user's name, key, location
+                                //the photo url that just uploaded, the icon ID value, and new datae
                                 Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), imageArray[row], new Date());
+                                //push the new article to the database
                                 mDatabaseReference.push().setValue(newArticle);
+                                //empty the edit text, hide the clear button and image view
                                 editText.setText("");
                                 imageView.setVisibility(View.GONE);
                                 selectedImageUri = null;
                             }
                         });
             }
+            //if there is only text
             else if (!articleText.isEmpty()) {
+                //get the content in the edit text
                 String content = editText.getText().toString();
+                //create new article with the same property as above, but the photo URL is null
                 Article newArticle = new Article(content, username, userKey, latitude, longitude, null, imageArray[row], new Date());
+                //push the new article to the database
                 mDatabaseReference.push().setValue(newArticle);
-                editText.setText("");
+                editText.setText("");       //empty the edit text
             }
-            buttonPost.setEnabled(true);
+            buttonPost.setEnabled(true);    //enable the post button
             }
         });
 
+        //set up user authentication
         Log.i("Account Activity", "setup Firebase Authentication");
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -179,12 +234,10 @@ public class AccountActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 //if user is signed in
                 if (user != null) {
-                    //Initialize the database
                     Log.i("Account Activity", "Signed In");
                 }
                 else {
                     Log.i("Account Activity", "Signed Out");
-                    //stop the database acitivity
                     //create a sign in menu
                     startActivityForResult(
                             AuthUI.getInstance()
@@ -234,7 +287,6 @@ public class AccountActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         // super initialization
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        ImageView imageView = this.findViewById(R.id.imageViewPhoto);
         switch(requestCode) {
             case 0: // first case, image was taken from camera
                 if(resultCode == RESULT_OK){ // if activity is successful
@@ -261,6 +313,7 @@ public class AccountActivity extends AppCompatActivity {
                     }
                     // make the imageView visible
                     imageView.setVisibility(View.VISIBLE);
+                    clearButton.setVisibility(View.VISIBLE);
                     // display the captured image
                     imageView.setImageURI(selectedImageUri);
                 }
@@ -270,6 +323,7 @@ public class AccountActivity extends AppCompatActivity {
                     // get the Uri and again, display the image
                     selectedImageUri = imageReturnedIntent.getData();
                     imageView.setVisibility(View.VISIBLE);
+                    clearButton.setVisibility(View.VISIBLE);
                     imageView.setImageURI(selectedImageUri);
                 }
                 break;

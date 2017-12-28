@@ -28,12 +28,13 @@ import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    GoogleApiClient mGoogleApiClient;
-    private GifImageView gifImageView;
+    GoogleApiClient mGoogleApiClient;       //an instance of google API client
+    private GifImageView gifImageView;      //an instance to run the gif
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -47,25 +48,48 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
         else {
+            //even though this activity does not use the map
+            //it is necessary to test the Google API Client in this activity before moving to the map
+            //so that any bug can be fixed here to prevent the app from crashing
             buildGoogleApiClient();
         }
 
+        //get the view from the layout for the gif
+        //this is a custom view import from a Git project
+        //check the app gradle to find more about the Git project
         gifImageView = (GifImageView)findViewById(R.id.welcome_gif);
         try {
+            //get the input gif from the assets folder
             InputStream inputStream = getAssets().open("welcome.gif");
-            byte[] bytes = IOUtils.toByteArray(inputStream);
-            gifImageView.setBytes(bytes);
-            gifImageView.startAnimation();
+            byte[] bytes = IOUtils.toByteArray(inputStream);    //convert the gif into an array of bytes
+            gifImageView.setBytes(bytes);                       //set the frame
+            gifImageView.startAnimation();                      //run the animation of the gif
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //stop the animation when this view is paused
+        gifImageView.stopAnimation();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //run the animation when this view is resumed
+        gifImageView.startAnimation();
+    }
+
+    //this will move to the Maps Activity
     public void moveToMap(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
     }
 
+    //setup Google API Client
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -75,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mGoogleApiClient.connect();
     }
 
+    //
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -84,8 +109,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
+                    // permission was granted, build the Google API Client
                     if (ContextCompat.checkSelfPermission(this,
                             android.Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
@@ -97,8 +121,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    // permission denied
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
                 return;
@@ -113,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 

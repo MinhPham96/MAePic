@@ -12,9 +12,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
-/**
- * Created by Hi on 19-Dec-17.
- */
+// adapter to display the articles in the list view in Account Activity
 
 public class ArticleAdapter extends ArrayAdapter<Article> {
     //Context: the activity that this adapter is applied
@@ -39,7 +37,7 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
             convertView = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.item_status, parent, false);
 
             holder = new ViewHolder();
-            //get each component from the layout
+            //get each respective component from the layout
             holder.commentText = (TextView) convertView.findViewById(R.id.commentTextView);
             holder.nameText = (TextView) convertView.findViewById(R.id.nameTextView);
             holder.dateText = (TextView) convertView.findViewById(R.id.dateTextView);
@@ -53,14 +51,18 @@ public class ArticleAdapter extends ArrayAdapter<Article> {
         //this will access to each cell of the list
         Article article = getItem(position);
 
+        //if there is a photo URL
         boolean isPhoto = article.getPhotoURL() != null;
         if(isPhoto) {
+            // set the image view to be visible
             holder.photoImageView.setVisibility(View.VISIBLE);
+            // and then display the image
             Glide.with(holder.photoImageView.getContext())
                     .load(article.getPhotoURL())
                     .into(holder.photoImageView);
         }
         else {
+            // if there is no photo URL, do not display the image view
             holder.photoImageView.setVisibility(View.GONE);
         }
 

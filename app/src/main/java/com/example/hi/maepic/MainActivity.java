@@ -95,6 +95,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         startActivity(intent);
     }
 
+    public void moveToAbout(View view) {
+        Log.i("Main Activity", "Move to MapsActivity");
+        Intent intent = new Intent(this, AboutApp.class);
+        startActivity(intent);
+    }
+
     //setup Google API Client
     protected synchronized void buildGoogleApiClient() {
         Log.i("Main Activity", "Setup Google API Client");

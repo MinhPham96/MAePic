@@ -14,7 +14,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         />
 
     <TextView
@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:text="Owner Name"
         android:textColor="#000"
         android:textSize="18dp"
@@ -34,7 +34,7 @@
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/ownerText"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="100dp"
         android:layout_marginTop="10dp"
         android:text="Note that the API key is linked to the encryption key used to sign the APK"
         android:textColor="#7F7E7E"

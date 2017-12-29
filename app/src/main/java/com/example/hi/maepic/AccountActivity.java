@@ -217,6 +217,7 @@ public class AccountActivity extends AppCompatActivity {
                                 //empty the edit text, hide the clear button and image view
                                 editText.setText("");
                                 imageView.setVisibility(View.GONE);
+                                clearButton.setVisibility(View.GONE);
                                 selectedImageUri = null;
                             }
                         });
@@ -276,6 +277,7 @@ public class AccountActivity extends AppCompatActivity {
                 sharedPref.edit().putString("Article Owner ID", articleList.get(position).getUid()).apply();
                 sharedPref.edit().putString("Article Content", articleList.get(position).getText()).apply();
                 sharedPref.edit().putString("User Key", mFirebaseAuth.getCurrentUser().getUid()).apply();
+                sharedPref.edit().putInt("Icon URL", articleList.get(position).getIconURL()).apply();
                 if(articleList.get(position).getPhotoURL() != null) {
                     sharedPref.edit().putString("Photo URL", articleList.get(position).getPhotoURL()).apply();
                 }

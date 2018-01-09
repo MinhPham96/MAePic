@@ -186,7 +186,7 @@ public class AccountActivity extends AppCompatActivity {
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            buttonPost.setEnabled(false);       //disable the button
+            buttonPost.setVisibility(View.GONE);       //disable the button
             //get the current selected icon option in the spinner
             final int row = spinner.getSelectedItemPosition();
             //get the text from the edit text, and remove all the space
@@ -233,7 +233,6 @@ public class AccountActivity extends AppCompatActivity {
                 Log.i("AccountActivity", "Article pushed");
                 editText.setText("");       //empty the edit text
             }
-            buttonPost.setEnabled(true);    //enable the post button
             }
         });
 
@@ -376,6 +375,8 @@ public class AccountActivity extends AppCompatActivity {
                         keyList.add(dataSnapshot.getKey());
                         Log.i("AccountActivity", "Add article");
                     }
+                    final Button buttonPost = findViewById(R.id.buttonPost);
+                    buttonPost.setVisibility(View.VISIBLE);
                 }
 
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {

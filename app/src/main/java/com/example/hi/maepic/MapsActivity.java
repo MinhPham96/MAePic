@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -192,12 +193,15 @@ public class MapsActivity extends AppCompatActivity implements
             }
         };
 
+        final MediaPlayer buttonSound = MediaPlayer.create(this, R.raw.sound);
+
         searchBar = (EditText) findViewById(R.id.search); // EditText variable for search bar
         Log.i("MapsActivity", "setup Search button");
         final Button buttonSearch = findViewById(R.id.buttonSearch);
         //search the name if the button is clicked
         buttonSearch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                buttonSound.start();
                 searchArticles();
                 Log.i("MapsActivity", "Search button pressed");
             }
@@ -208,6 +212,7 @@ public class MapsActivity extends AppCompatActivity implements
         //move to next street if the button is clicked
         buttonLeft.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                buttonSound.start();
                 movetoPrevArticle();
             }
         });
@@ -219,6 +224,7 @@ public class MapsActivity extends AppCompatActivity implements
         //move to previous street if the button is clicked
         buttonRight.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                buttonSound.start();
                 movetoNextArticle();
             }
         });

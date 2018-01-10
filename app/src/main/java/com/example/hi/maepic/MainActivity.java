@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     GoogleApiClient mGoogleApiClient;       //an instance of google API client
     private GifImageView gifImageView;      //an instance to run the gif
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,12 +92,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //this will move to the Maps Activity
     public void moveToMap(View view) {
+        MediaPlayer buttonSound = MediaPlayer.create(this, R.raw.sound);
+        buttonSound.start();
         Log.i("Main Activity", "Move to MapsActivity");
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
     }
 
     public void moveToAbout(View view) {
+        MediaPlayer buttonSound = MediaPlayer.create(this, R.raw.sound);
+        buttonSound.start();
         Log.i("Main Activity", "Move to MapsActivity");
         Intent intent = new Intent(this, AboutApp.class);
         startActivity(intent);

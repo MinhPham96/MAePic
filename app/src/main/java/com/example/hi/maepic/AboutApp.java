@@ -14,7 +14,7 @@ public class AboutApp extends AppCompatActivity {
         setContentView(R.layout.activity_about_app);
         // a text field, and the associated text
         TextView appIntro = (TextView) this.findViewById(R.id.introduction);
-        appIntro.setText("MAePic - Instructions to usage \n" +
+        appIntro.setText("Instructions to usage \n" +
                 "\n" +
                 "This application requires the user to log in and the location services permission. \n \n" +
                 "When starting the application, the user will be taken to the map. \n" +

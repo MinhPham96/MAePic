@@ -102,8 +102,8 @@
         android:id="@+id/buttonDelete"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginStart="300dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginStart="290dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/ic_delete" />
 
 </RelativeLayout>

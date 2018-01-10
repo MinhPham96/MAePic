@@ -9,11 +9,11 @@
     android:orientation="vertical">
 
 
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:srcCompat="@android:drawable/btn_star"
-        android:id="@+id/imageView" />
+    <!--<ImageView-->
+        <!--android:layout_width="50dp"-->
+        <!--android:layout_height="50dp"-->
+        <!--app:srcCompat="@android:drawable/btn_star"-->
+        <!--android:id="@+id/imageView" />-->
 
     <TextView
         android:id="@+id/nameTextView"
@@ -47,7 +47,8 @@
         android:layout_toEndOf="@+id/imageView"
         android:layout_marginStart="30dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        tools:text="Date" />
+        tools:text="Date"
+        android:textSize="10dp"/>
 
     <ProgressBar
         android:id="@+id/progressBarComment"
@@ -55,6 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
         android:layout_below="@+id/dateTextView" />
 
 </RelativeLayout>

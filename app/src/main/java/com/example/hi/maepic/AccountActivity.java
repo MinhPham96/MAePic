@@ -1,12 +1,11 @@
 package com.example.hi.maepic;
 
-import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,13 +17,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -32,7 +27,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -136,12 +130,15 @@ public class AccountActivity extends AppCompatActivity {
         //set this adapter for the list view
         listView.setAdapter(mArticleAdapter);
 
+        final MediaPlayer buttonSound = MediaPlayer.create(this, R.raw.sound);
+
         Log.i("AccountActivity", "setup Camera button");
         //when user tap on the camera button
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //switch to the camera intent
+                buttonSound.start();
                 Log.i("AccountActivity", "move to Camera");
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 startActivityForResult(cameraIntent, 0);
@@ -154,6 +151,7 @@ public class AccountActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //switch to the gallery intent
+                buttonSound.start();
                 Log.i("AccountActivity", "move to Gallery");
                 Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -166,6 +164,7 @@ public class AccountActivity extends AppCompatActivity {
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                buttonSound.start();
                 Log.i("AccountActivity", "Clear image");
                 selectedImageUri = null;
                 imageView.setVisibility(View.GONE);
@@ -180,13 +179,14 @@ public class AccountActivity extends AppCompatActivity {
         SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.row, textArray, imageArray);
         spinner.setAdapter(adapter);        //set the adapter for the spinner
 
+
+
         Log.i("AccountActivity", "setup Post button");
         //when user tap on the button post
         final Button buttonPost = findViewById(R.id.buttonPost);
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            buttonPost.setVisibility(View.GONE);       //disable the button
             //get the current selected icon option in the spinner
             final int row = spinner.getSelectedItemPosition();
             //get the text from the edit text, and remove all the space
@@ -197,42 +197,48 @@ public class AccountActivity extends AppCompatActivity {
             //if there is text content and photo selected
             //the process of uploading the photo may take some times to finish
             //when tap the post button, please wait for a moment before everything is updated
-            if (selectedImageUri != null && !articleText.isEmpty()) {
-                //get the reference of the last position in the "article_photos" folder
-                StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
-                photoRef.putFile(selectedImageUri)      //upload the photo to the storage
-                        .addOnSuccessListener(AccountActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                // When the image has successfully uploaded, we get its download URL
-                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                                //get the text content from the edit text
-                                String content = editText.getText().toString();
+            if (!articleText.isEmpty()) {
+                buttonPost.setVisibility(View.GONE);
+                buttonSound.start();
+                if(selectedImageUri != null) {
+                    //get the reference of the last position in the "article_photos" folder
+                    StorageReference photoRef = mPhotoStorageReference.child(selectedImageUri.getLastPathSegment());
+                    photoRef.putFile(selectedImageUri)      //upload the photo to the storage
+                            .addOnSuccessListener(AccountActivity.this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    // When the image has successfully uploaded, we get its download URL
+                                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                    //get the text content from the edit text
+                                    String content = editText.getText().toString();
 
-                                //create new article with current user's name, key, location
-                                //the photo url that just uploaded, the icon ID value, and new datae
-                                Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), imageArray[row], new Date());
-                                //push the new article to the database
-                                mDatabaseReference.push().setValue(newArticle);
-                                Log.i("AccountActivity", "Article pushed");
-                                //empty the edit text, hide the clear button and image view
-                                editText.setText("");
-                                imageView.setVisibility(View.GONE);
-                                clearButton.setVisibility(View.GONE);
-                                selectedImageUri = null;
-                            }
-                        });
+                                    //create new article with current user's name, key, location
+                                    //the photo url that just uploaded, the icon ID value, and new datae
+                                    Article newArticle = new Article(content, username, userKey, latitude, longitude, downloadUrl.toString(), imageArray[row], new Date());
+                                    //push the new article to the database
+                                    mDatabaseReference.push().setValue(newArticle);
+                                    Log.i("AccountActivity", "Article pushed");
+                                    //empty the edit text, hide the clear button and image view
+                                    editText.setText("");
+                                    imageView.setVisibility(View.GONE);
+                                    clearButton.setVisibility(View.GONE);
+                                    selectedImageUri = null;
+                                }
+                            });
+                }
+                else {
+                    buttonPost.setVisibility(View.GONE);       //disable the button
+                    //get the content in the edit text
+                    String content = editText.getText().toString();
+                    //create new article with the same property as above, but the photo URL is null
+                    Article newArticle = new Article(content, username, userKey, latitude, longitude, null, imageArray[row], new Date());
+                    //push the new article to the database
+                    mDatabaseReference.push().setValue(newArticle);
+                    Log.i("AccountActivity", "Article pushed");
+                    editText.setText("");       //empty the edit text
+                }
             }
             //if there is only text
-            else if (!articleText.isEmpty()) {
-                //get the content in the edit text
-                String content = editText.getText().toString();
-                //create new article with the same property as above, but the photo URL is null
-                Article newArticle = new Article(content, username, userKey, latitude, longitude, null, imageArray[row], new Date());
-                //push the new article to the database
-                mDatabaseReference.push().setValue(newArticle);
-                Log.i("AccountActivity", "Article pushed");
-                editText.setText("");       //empty the edit text
-            }
+
             }
         });
 
@@ -283,6 +289,9 @@ public class AccountActivity extends AppCompatActivity {
                 else {
                     sharedPref.edit().putString("Photo URL", null).apply();
                 }
+                //mark the chosen article latitude and longitude
+                sharedPref.edit().putFloat("Des Latitude", (float) articleList.get(position).getLatitude()).apply();
+                sharedPref.edit().putFloat("Des Longitude", (float) articleList.get(position).getLongitude()).apply();
                 Log.i("AccountActivity", "Move to InfoView");
                 //move to the info view of the selected article
                 Intent intent = new Intent(AccountActivity.this,InfoView.class);
@@ -375,6 +384,7 @@ public class AccountActivity extends AppCompatActivity {
                         keyList.add(dataSnapshot.getKey());
                         Log.i("AccountActivity", "Add article");
                     }
+                    //re-enable the post button when a new post is successfully added
                     final Button buttonPost = findViewById(R.id.buttonPost);
                     buttonPost.setVisibility(View.VISIBLE);
                 }
@@ -384,13 +394,17 @@ public class AccountActivity extends AppCompatActivity {
                     article = dataSnapshot.getValue(Article.class);
                     //it will be located at the end of the adapter
                     if(mArticleAdapter.getCount() > 0) {
-                        Article changedArticle = mArticleAdapter.getItem(mArticleAdapter.getCount() - 1);
-                        //remove the uncensored article text with the censored one
-                        mArticleAdapter.remove(changedArticle);
-                        mArticleAdapter.add(article);
-                        //notify the adapter to refresh the view
-                        mArticleAdapter.notifyDataSetChanged();
-                        Log.i("AccountActivity", "Checked article censorship");
+                        //since this function is called on every change
+                        //the app needs to check if the article being change belong to this user or not
+                        if(article.getUid().equals(userKey)) {
+                            Article changedArticle = mArticleAdapter.getItem(mArticleAdapter.getCount() - 1);
+                            //remove the uncensored article text with the censored one
+                            mArticleAdapter.remove(changedArticle);
+                            mArticleAdapter.add(article);
+                            //notify the adapter to refresh the view
+                            mArticleAdapter.notifyDataSetChanged();
+                            Log.i("AccountActivity", "Checked article censorship");
+                        }
                     }
                 }
                 public void onChildRemoved(DataSnapshot dataSnapshot) {}

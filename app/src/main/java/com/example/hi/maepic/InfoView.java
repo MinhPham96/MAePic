@@ -3,6 +3,7 @@ package com.example.hi.maepic;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -165,11 +166,14 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
             photoImageView.setVisibility(View.GONE);
         }
 
+        final MediaPlayer buttonSound = MediaPlayer.create(this, R.raw.sound);
+
         Log.i("InfoView", "setup Comment button");
         //when user send the comment
         commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                buttonSound.start();
                 if(!editText.getText().toString().replace(" ","").isEmpty()) {
                     //set new comment with: comment content, current user, the article key, and the date
                     Comment newComment = new Comment(editText.getText().toString(), username, articleKey, new Date());
@@ -186,6 +190,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
         routeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                buttonSound.start();
                 //set draw route flag to true
                 sharedPref.edit().putBoolean("Draw Route", true).apply();
                 Log.i("InfoView", "Draw route enabled, move to MapsActivity");
@@ -200,6 +205,7 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                buttonSound.start();
                 Log.i("InfoView", "delete all comments");
                 //delete all the comment in the article
                 for(int key = 0; key < commentKeyList.size(); key++) {
@@ -326,13 +332,17 @@ public class InfoView extends AppCompatActivity implements AbsListView.OnScrollL
                     comment = dataSnapshot.getValue(Comment.class);
                     //it will be located at the end of the adapter
                     if(mCommentAdapter.getCount() > 0) {
-                        Comment changedComment = mCommentAdapter.getItem(mCommentAdapter.getCount() - 1);
-                        //remove the uncensored comment with the censored one
-                        mCommentAdapter.remove(changedComment);
-                        mCommentAdapter.add(comment);
-                        //notify the adapter to refresh the view
-                        mCommentAdapter.notifyDataSetChanged();
-                        Log.i("InfoView", "article comment censorship checked");
+                        //since this function is called on every change
+                        //the app needs to check if the comment belong to the article or not
+                        if(comment.getArticleKey().equals(articleKey)) {
+                            Comment changedComment = mCommentAdapter.getItem(mCommentAdapter.getCount() - 1);
+                            //remove the uncensored comment with the censored one
+                            mCommentAdapter.remove(changedComment);
+                            mCommentAdapter.add(comment);
+                            //notify the adapter to refresh the view
+                            mCommentAdapter.notifyDataSetChanged();
+                            Log.i("InfoView", "article comment censorship checked");
+                        }
                     }
 
                 }

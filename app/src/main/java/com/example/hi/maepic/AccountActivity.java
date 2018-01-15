@@ -65,6 +65,9 @@ public class AccountActivity extends AppCompatActivity {
 
     private Uri selectedImageUri;           //an instance that store the location of a photo in the device
     private Button clearButton;             //an instance of the clear button
+    private Button postButton;
+    private Button cameraButton;
+    private Button galleryButton;
     private ImageView imageView;            //an instance of the image view
 
     double latitude = 0.0;      //an instance to store the user current latitude
@@ -115,9 +118,12 @@ public class AccountActivity extends AppCompatActivity {
         //initialize all the layout variables
         final EditText editText = (EditText) findViewById(R.id.commentEditText);
         final ListView listView = (ListView) findViewById(R.id.statusListView);
-        final Button cameraButton = this.findViewById(R.id.buttonCamera);
-        final Button galleryButton = this.findViewById(R.id.buttonGallery);
+
+        cameraButton = this.findViewById(R.id.buttonCamera);
+        galleryButton = this.findViewById(R.id.buttonGallery);
         clearButton = this.findViewById(R.id.buttonClear);
+        postButton = this.findViewById(R.id.buttonPost);
+
         imageView = this.findViewById(R.id.imageViewPhoto);
         //hide the clear button and the image view for user photo selection
         //since initially there is no photo selected or clear yet
@@ -198,7 +204,12 @@ public class AccountActivity extends AppCompatActivity {
             //the process of uploading the photo may take some times to finish
             //when tap the post button, please wait for a moment before everything is updated
             if (!articleText.isEmpty()) {
+                // while posting, the buttons are set  to be gone to avoid changing data halfway
                 buttonPost.setVisibility(View.GONE);
+                cameraButton.setVisibility(View.GONE);
+                galleryButton.setVisibility(View.GONE);
+                clearButton.setVisibility(View.GONE);
+
                 buttonSound.start();
                 if(selectedImageUri != null) {
                     //get the reference of the last position in the "article_photos" folder
@@ -384,9 +395,10 @@ public class AccountActivity extends AppCompatActivity {
                         keyList.add(dataSnapshot.getKey());
                         Log.i("AccountActivity", "Add article");
                     }
-                    //re-enable the post button when a new post is successfully added
-                    final Button buttonPost = findViewById(R.id.buttonPost);
-                    buttonPost.setVisibility(View.VISIBLE);
+                    //re-enable the post, camera and gallery buttons when a new post is successfully added
+                    postButton.setVisibility(View.VISIBLE);
+                    cameraButton.setVisibility(View.VISIBLE);
+                    galleryButton.setVisibility(View.VISIBLE);
                 }
 
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
